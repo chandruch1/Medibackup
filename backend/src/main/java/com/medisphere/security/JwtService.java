@@ -5,6 +5,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
@@ -14,22 +15,22 @@ import java.util.function.Function;
 @Service
 public class JwtService {
 
-    // 64-byte Base64 Secret
-    private static final String SECRET_KEY =
-            "MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWYwMTIzNDU2Nzg5YWJjZGVmMDEyMzQ1Njc4OWFiY2RlZg==";
+    @Value("${jwt.secret}")
+    private String SECRET_KEY;
 
+    // Generate Secret Key
     private SecretKey getSignKey() {
         byte[] keyBytes = Decoders.BASE64.decode(SECRET_KEY);
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    // Generate Token
+    // Generate JWT Token
     public String generateToken(String username) {
 
         return Jwts.builder()
                 .subject(username)
                 .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60))
+                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60)) // 1 Hour
                 .signWith(getSignKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
@@ -59,7 +60,7 @@ public class JwtService {
     // Validate Token
     public boolean isTokenValid(String token, String username) {
 
-        String extractedUsername = extractUsername(token);
+        final String extractedUsername = extractUsername(token);
 
         return extractedUsername.equals(username)
                 && !extractExpiration(token).before(new Date());
