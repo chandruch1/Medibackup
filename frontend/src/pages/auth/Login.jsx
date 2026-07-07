@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { login } from "../services/authService";
+
+import { login } from "../../services/authService";
+import { saveToken, saveUsername } from "../../utils/token";
+import { toast } from "react-toastify";
 
 function Login() {
 
@@ -25,12 +28,13 @@ function Login() {
 
             console.log("Login Response:", response);
 
-            localStorage.setItem("token", response.token);
-            localStorage.setItem("username", username);
+            saveToken(response.token);
+            saveUsername(username);
 
-            alert(response.message);
+            toast.success(response.message);
 
-            navigate("/dashboard");
+            // For now only ADMIN exists
+            navigate("/admin/dashboard");
 
         } catch (err) {
 
@@ -40,11 +44,13 @@ function Login() {
 
                 console.log("Backend Response:", err.response.data);
 
-                setError(err.response.data.message);
+                setError(
+                    err.response.data.message || "Login Failed"
+                );
 
             } else {
 
-                setError("Cannot connect to the server.");
+                toast.error("Cannot connect to the server.");
 
             }
 

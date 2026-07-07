@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-    baseURL: "https://medisphere-info-2.onrender.com"
+    baseURL: "https://medisphere-info-2.onrender.com",
 });
 
 api.interceptors.request.use((config) => {
@@ -13,7 +13,6 @@ api.interceptors.request.use((config) => {
     }
 
     return config;
-
 });
 
 export default api;
