@@ -19,6 +19,7 @@ public class PrescriptionService {
 
     private final PrescriptionRepository prescriptionRepository;
     private final AppointmentRepository appointmentRepository;
+    private final MailService mailService;
 
     // ==========================
     // Add Prescription
@@ -50,8 +51,20 @@ public class PrescriptionService {
                 .notes(request.getNotes())
                 .build();
 
-        return mapToResponse(
-                prescriptionRepository.save(prescription));
+        Prescription saved = prescriptionRepository.save(prescription);
+
+// Send prescription email to patient
+        mailService.sendPrescriptionEmail(
+                appointment.getPatient().getEmail(),
+                appointment.getPatient().getPatientName(),
+                appointment.getDoctor().getDoctorName(),
+                saved.getMedicine(),
+                saved.getDosage(),
+                saved.getDuration(),
+                saved.getNotes()
+        );
+
+        return mapToResponse(saved);
     }
 
     // ==========================

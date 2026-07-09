@@ -33,6 +33,7 @@ public class AppointmentService {
     private final AppointmentRepository appointmentRepository;
     private final DoctorRepository doctorRepository;
     private final PatientRepository patientRepository;
+    private final MailService mailService;
 
     // Book Appointment
     public AppointmentResponse bookAppointment(AppointmentRequest request) {
@@ -217,7 +218,17 @@ public class AppointmentService {
 
         appointment.setStatus(AppointmentStatus.APPROVED);
 
-        Appointment updatedAppointment = appointmentRepository.save(appointment);
+        Appointment updatedAppointment =
+                appointmentRepository.save(appointment);
+
+// Send Email
+        mailService.sendAppointmentApprovedEmail(
+                appointment.getPatient().getEmail(),
+                appointment.getPatient().getPatientName(),
+                appointment.getDoctor().getDoctorName(),
+                appointment.getAppointmentDate().toString(),
+                appointment.getAppointmentTime().toString()
+        );
 
         return mapToResponse(updatedAppointment);
     }
@@ -231,7 +242,15 @@ public class AppointmentService {
 
         appointment.setStatus(AppointmentStatus.REJECTED);
 
-        Appointment updatedAppointment = appointmentRepository.save(appointment);
+        Appointment updatedAppointment =
+                appointmentRepository.save(appointment);
+
+// Send Email
+        mailService.sendAppointmentRejectedEmail(
+                appointment.getPatient().getEmail(),
+                appointment.getPatient().getPatientName(),
+                appointment.getDoctor().getDoctorName()
+        );
 
         return mapToResponse(updatedAppointment);
     }
@@ -301,7 +320,18 @@ public class AppointmentService {
 
         Appointment saved = appointmentRepository.save(appointment);
 
+// Send Email
+        mailService.sendAppointmentBookedEmail(
+                patient.getEmail(),
+                patient.getPatientName(),
+                doctor.getDoctorName(),
+                saved.getAppointmentDate().toString(),
+                saved.getAppointmentTime().toString()
+        );
+
         return mapToResponse(saved);
+
+
     }
     public List<AppointmentResponse> getMyAppointmentsPatient(String email) {
 

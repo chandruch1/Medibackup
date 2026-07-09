@@ -167,4 +167,14 @@ public class DoctorController {
                 authentication.getName(),
                 request);
     }
+    @PutMapping("/profile")
+    @PreAuthorize("hasRole('DOCTOR')")
+    public DoctorResponse updateProfile(
+            Authentication authentication,
+            @Valid @RequestBody DoctorProfileUpdateRequest request) {
+
+        return doctorService.updateProfile(
+                authentication.getName(),
+                request);
+    }
 }

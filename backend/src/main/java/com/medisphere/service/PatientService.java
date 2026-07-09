@@ -17,6 +17,15 @@ import com.medisphere.exception.DuplicateResourceException;
 import com.medisphere.exception.InvalidCredentialsException;
 import java.util.List;
 import java.util.stream.Collectors;
+import com.medisphere.dto.PatientProfileUpdateRequest;
+import com.medisphere.dto.ForgotPasswordRequest;
+import com.medisphere.dto.VerifyOtpRequest;
+import com.medisphere.dto.ResetPasswordRequest;
+import com.medisphere.entity.OtpVerification;
+import com.medisphere.repository.OtpVerificationRepository;
+
+import java.time.LocalDateTime;
+import java.util.Random;
 
 
 @Service
@@ -26,6 +35,8 @@ public class PatientService {
     private final PatientRepository patientRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final OtpVerificationRepository otpRepository;
+    private final MailService mailService;
 
 
     // Add Patient
@@ -247,5 +258,98 @@ public class PatientService {
         patientRepository.save(patient);
 
         return "Password changed successfully";
+    }
+
+    public PatientResponse updateProfile(
+            String email,
+            PatientProfileUpdateRequest request) {
+
+        Patient patient = patientRepository.findByEmail(email)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Patient not found"));
+
+        // Check duplicate phone number
+        if (!patient.getPhone().equals(request.getPhone())
+                && patientRepository.existsByPhone(request.getPhone())) {
+
+            throw new DuplicateResourceException(
+                    "Phone number already exists");
+        }
+
+        patient.setPhone(request.getPhone());
+        patient.setAddress(request.getAddress());
+        patient.setBloodGroup(request.getBloodGroup());
+        patient.setDisease(request.getDisease());
+
+        Patient updatedPatient = patientRepository.save(patient);
+
+        return mapToResponse(updatedPatient);
+    }
+    public String forgotPassword(ForgotPasswordRequest request) {
+
+        Patient patient = patientRepository.findByEmail(request.getEmail())
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Patient not found"));
+
+        // Generate 6-digit OTP
+        String otp = String.format("%06d", new Random().nextInt(999999));
+
+        otpRepository.deleteByEmail(request.getEmail());
+
+        OtpVerification otpVerification = OtpVerification.builder()
+                .email(request.getEmail())
+                .otp(otp)
+                .expiryTime(LocalDateTime.now().plusMinutes(5))
+                .verified(false)
+                .build();
+
+        otpRepository.save(otpVerification);
+
+        mailService.sendOtpEmail(request.getEmail(), otp);
+
+        return "OTP sent successfully to your email.";
+    }
+    public String verifyOtp(VerifyOtpRequest request) {
+
+        OtpVerification otp = otpRepository.findByEmail(request.getEmail())
+                .orElseThrow(() ->
+                        new RuntimeException("OTP not found"));
+
+        if (otp.getExpiryTime().isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("OTP has expired");
+        }
+
+        if (!otp.getOtp().equals(request.getOtp())) {
+            throw new RuntimeException("Invalid OTP");
+        }
+
+        otp.setVerified(true);
+
+        otpRepository.save(otp);
+
+        return "OTP verified successfully.";
+    }
+    public String resetPassword(ResetPasswordRequest request) {
+
+        OtpVerification otp = otpRepository.findByEmail(request.getEmail())
+                .orElseThrow(() ->
+                        new RuntimeException("OTP verification not found"));
+
+        if (!otp.getVerified()) {
+            throw new RuntimeException("Please verify OTP first");
+        }
+
+        Patient patient = patientRepository.findByEmail(request.getEmail())
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Patient not found"));
+
+        patient.setPassword(
+                passwordEncoder.encode(request.getNewPassword()));
+
+        patientRepository.save(patient);
+
+        otpRepository.deleteByEmail(request.getEmail());
+
+        return "Password reset successfully.";
     }
 }

@@ -18,6 +18,7 @@ import org.springframework.data.domain.Sort;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
+import com.medisphere.dto.DoctorProfileUpdateRequest;
 
 @Service
 @RequiredArgsConstructor
@@ -248,5 +249,32 @@ public class DoctorService {
         doctorRepository.save(doctor);
 
         return "Password changed successfully";
+    }
+    public DoctorResponse updateProfile(
+            String email,
+            DoctorProfileUpdateRequest request) {
+
+        Doctor doctor = doctorRepository.findByEmail(email)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Doctor not found"));
+
+        // Check duplicate phone number
+        if (!doctor.getPhone().equals(request.getPhone())
+                && doctorRepository.existsByPhone(request.getPhone())) {
+
+            throw new DuplicateResourceException(
+                    "Phone number already exists");
+        }
+
+        doctor.setPhone(request.getPhone());
+        doctor.setQualification(request.getQualification());
+        doctor.setExperience(request.getExperience());
+        doctor.setConsultationFee(request.getConsultationFee());
+        doctor.setAvailableDays(request.getAvailableDays());
+        doctor.setAvailableTime(request.getAvailableTime());
+
+        Doctor updatedDoctor = doctorRepository.save(doctor);
+
+        return mapToResponse(updatedDoctor);
     }
 }

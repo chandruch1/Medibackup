@@ -154,4 +154,35 @@ public class PatientController {
                 request);
     }
 
+    @PutMapping("/profile")
+    @PreAuthorize("hasRole('PATIENT')")
+    public PatientResponse updateProfile(
+            Authentication authentication,
+            @Valid @RequestBody PatientProfileUpdateRequest request) {
+
+        return patientService.updateProfile(
+                authentication.getName(),
+                request);
+    }
+    @PostMapping("/forgot-password")
+    public String forgotPassword(
+            @Valid @RequestBody ForgotPasswordRequest request) {
+
+        return patientService.forgotPassword(request);
+    }
+
+    @PostMapping("/verify-otp")
+    public String verifyOtp(
+            @Valid @RequestBody VerifyOtpRequest request) {
+
+        return patientService.verifyOtp(request);
+    }
+
+    @PostMapping("/reset-password")
+    public String resetPassword(
+            @Valid @RequestBody ResetPasswordRequest request) {
+
+        return patientService.resetPassword(request);
+    }
+
 }
