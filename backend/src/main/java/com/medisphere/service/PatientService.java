@@ -15,6 +15,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import com.medisphere.exception.DuplicateResourceException;
 import com.medisphere.exception.InvalidCredentialsException;
+
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 import com.medisphere.dto.PatientProfileUpdateRequest;
@@ -61,6 +63,14 @@ public class PatientService {
                 .disease(request.getDisease())
                 .status(request.getStatus())
                 .dob(request.getDob())
+                .password(
+                        passwordEncoder.encode(
+                                generatePassword(
+                                        request.getPatientName(),
+                                        request.getDob()
+                                )
+                        )
+                )
                 .build();
 
         Patient savedPatient = patientRepository.save(patient);
@@ -351,5 +361,13 @@ public class PatientService {
         otpRepository.deleteByEmail(request.getEmail());
 
         return "Password reset successfully.";
+    }
+    private String generatePassword(String patientName, LocalDate dob) {
+
+        String firstName = patientName.trim().split(" ")[0];
+
+        int year = dob.getYear();
+
+        return firstName + year;
     }
 }
