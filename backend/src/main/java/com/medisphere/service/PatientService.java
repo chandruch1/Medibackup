@@ -318,11 +318,13 @@ public class PatientService {
         try {
 
             mailService.sendOtpEmail(request.getEmail(), otp);
-            return "OTP sent successfully to your email.";
 
         } catch (Exception e) {
 
-            System.err.println("Failed to send OTP email: " + e.getMessage());
+            e.printStackTrace();   // <-- Add this line
+
+            System.err.println("Failed to send OTP email: "
+                    + e.getMessage());
 
             return "OTP generated successfully, but email could not be sent.";
         }
