@@ -1,26 +1,32 @@
 package com.medisphere.service;
 
-import com.medisphere.dto.PatientRequest;
-import com.medisphere.dto.PatientResponse;
+import com.medisphere.dto.*;
 import com.medisphere.entity.Patient;
 import com.medisphere.exception.DuplicateResourceException;
 import com.medisphere.exception.ResourceNotFoundException;
 import com.medisphere.repository.PatientRepository;
+import com.medisphere.security.JwtService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-
+import com.medisphere.exception.DuplicateResourceException;
+import com.medisphere.exception.InvalidCredentialsException;
 import java.util.List;
 import java.util.stream.Collectors;
+
 
 @Service
 @RequiredArgsConstructor
 public class PatientService {
 
     private final PatientRepository patientRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
+
 
     // Add Patient
     public PatientResponse addPatient(PatientRequest request) {
@@ -43,6 +49,7 @@ public class PatientService {
                 .bloodGroup(request.getBloodGroup())
                 .disease(request.getDisease())
                 .status(request.getStatus())
+                .dob(request.getDob())
                 .build();
 
         Patient savedPatient = patientRepository.save(patient);
@@ -95,6 +102,7 @@ public class PatientService {
         patient.setBloodGroup(request.getBloodGroup());
         patient.setDisease(request.getDisease());
         patient.setStatus(request.getStatus());
+        patient.setDob(request.getDob());
 
         Patient updatedPatient = patientRepository.save(patient);
 
@@ -160,5 +168,84 @@ public class PatientService {
 
         return patientRepository.findAll(pageable)
                 .map(this::mapToResponse);
+    }
+
+    public String register(PatientRegisterRequest request) {
+
+        if (patientRepository.existsByEmail(request.getEmail())) {
+            throw new DuplicateResourceException("Email already exists");
+        }
+
+        if (patientRepository.existsByPhone(request.getPhone())) {
+            throw new DuplicateResourceException("Phone already exists");
+        }
+
+        Patient patient = Patient.builder()
+                .patientName(request.getPatientName())
+                .age(request.getAge())
+                .gender(request.getGender())
+                .phone(request.getPhone())
+                .email(request.getEmail())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .address(request.getAddress())
+                .bloodGroup(request.getBloodGroup())
+                .disease(request.getDisease())
+                .status(true)
+                .dob(request.getDob())
+                .build();
+
+        patientRepository.save(patient);
+
+        return "Patient Registered Successfully";
+    }
+
+    public PatientLoginResponse login(PatientLoginRequest request) {
+
+        Patient patient = patientRepository.findByEmail(request.getEmail())
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Patient not found"));
+
+        if (!passwordEncoder.matches(request.getPassword(), patient.getPassword())) {
+            throw new InvalidCredentialsException("Invalid password");
+        }
+
+        String token = jwtService.generateToken(patient.getEmail());
+
+        return PatientLoginResponse.builder()
+                .token(token)
+                .patientName(patient.getPatientName())
+                .email(patient.getEmail())
+                .role("PATIENT")
+                .build();
+    }
+    public PatientResponse getProfile(String email) {
+
+        Patient patient = patientRepository.findByEmail(email)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Patient not found"));
+
+        return mapToResponse(patient);
+    }
+    public String changePassword(
+            String email,
+            ChangePasswordRequest request) {
+
+        Patient patient = patientRepository.findByEmail(email)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Patient not found"));
+
+        if (!passwordEncoder.matches(
+                request.getOldPassword(),
+                patient.getPassword())) {
+
+            throw new RuntimeException("Old password is incorrect");
+        }
+
+        patient.setPassword(
+                passwordEncoder.encode(request.getNewPassword()));
+
+        patientRepository.save(patient);
+
+        return "Password changed successfully";
     }
 }

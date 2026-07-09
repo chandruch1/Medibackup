@@ -2,6 +2,8 @@ package com.medisphere.service;
 
 import com.medisphere.dto.AppointmentRequest;
 import com.medisphere.dto.AppointmentResponse;
+import com.medisphere.dto.DoctorDashboardResponse;
+import com.medisphere.dto.PatientAppointmentRequest;
 import com.medisphere.entity.*;
 import com.medisphere.exception.ResourceNotFoundException;
 import com.medisphere.repository.AppointmentRepository;
@@ -13,8 +15,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import com.medisphere.dto.PatientDashboardResponse;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+
+import java.time.DayOfWeek;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -43,7 +51,7 @@ public class AppointmentService {
                 .appointmentDate(request.getAppointmentDate())
                 .appointmentTime(request.getAppointmentTime())
                 .reason(request.getReason())
-                .status(AppointmentStatus.BOOKED)
+                .status(AppointmentStatus.PENDING)
                 .build();
 
         Appointment savedAppointment = appointmentRepository.save(appointment);
@@ -191,5 +199,154 @@ public class AppointmentService {
                 appointmentRepository.save(appointment);
 
         return mapToResponse(updatedAppointment);
+    }
+
+    public List<AppointmentResponse> getMyAppointments(String email) {
+
+        return appointmentRepository.findByDoctor_Email(email)
+                .stream()
+                .map(this::mapToResponse)
+                .toList();
+    }
+    // Approve Appointment
+    public AppointmentResponse approveAppointment(Long id) {
+
+        Appointment appointment = appointmentRepository.findById(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Appointment not found"));
+
+        appointment.setStatus(AppointmentStatus.APPROVED);
+
+        Appointment updatedAppointment = appointmentRepository.save(appointment);
+
+        return mapToResponse(updatedAppointment);
+    }
+
+    // Reject Appointment
+    public AppointmentResponse rejectAppointment(Long id) {
+
+        Appointment appointment = appointmentRepository.findById(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Appointment not found"));
+
+        appointment.setStatus(AppointmentStatus.REJECTED);
+
+        Appointment updatedAppointment = appointmentRepository.save(appointment);
+
+        return mapToResponse(updatedAppointment);
+    }
+    public AppointmentResponse bookAppointmentByPatient(
+            String email,
+            PatientAppointmentRequest request) {
+
+        Patient patient = patientRepository.findByEmail(email)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Patient not found"));
+
+        Doctor doctor = doctorRepository.findById(request.getDoctorId())
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Doctor not found"));
+
+        if (!doctor.getStatus()) {
+            throw new RuntimeException("Doctor is currently unavailable");
+        }
+
+        if (request.getAppointmentDate().isBefore(LocalDate.now())) {
+            throw new RuntimeException("Appointment date cannot be in the past");
+        }
+
+        DayOfWeek day = request.getAppointmentDate().getDayOfWeek();
+
+        String dayName = day.name().substring(0,1)
+                + day.name().substring(1).toLowerCase().substring(0,2);
+
+        if (doctor.getAvailableDays().equalsIgnoreCase("Mon-Fri")) {
+
+            if(day == DayOfWeek.SATURDAY || day == DayOfWeek.SUNDAY){
+                throw new RuntimeException(
+                        "Doctor is not available on " + dayName);
+            }
+        }
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
+
+        String[] timeRange = doctor.getAvailableTime().split("-");
+
+        LocalTime startTime = LocalTime.parse(timeRange[0].trim(), formatter);
+        LocalTime endTime = LocalTime.parse(timeRange[1].trim(), formatter);
+
+        LocalTime appointmentTime = request.getAppointmentTime();
+
+        if (appointmentTime.isBefore(startTime) || appointmentTime.isAfter(endTime)) {
+            throw new RuntimeException("Doctor is not available at this time");
+        }
+
+        if (appointmentRepository.existsByDoctor_IdAndAppointmentDateAndAppointmentTime(
+                doctor.getId(),
+                request.getAppointmentDate(),
+                request.getAppointmentTime())) {
+
+            throw new RuntimeException(
+                    "Doctor already has an appointment at this date and time");
+        }
+
+        Appointment appointment = Appointment.builder()
+                .doctor(doctor)
+                .patient(patient)
+                .appointmentDate(request.getAppointmentDate())
+                .appointmentTime(request.getAppointmentTime())
+                .reason(request.getReason())
+                .status(AppointmentStatus.PENDING)
+                .build();
+
+        Appointment saved = appointmentRepository.save(appointment);
+
+        return mapToResponse(saved);
+    }
+    public List<AppointmentResponse> getMyAppointmentsPatient(String email) {
+
+        return appointmentRepository.findByPatient_Email(email)
+                .stream()
+                .map(this::mapToResponse)
+                .toList();
+    }
+
+    public DoctorDashboardResponse getDoctorDashboard(String email) {
+
+        return DoctorDashboardResponse.builder()
+                .totalAppointments(
+                        appointmentRepository.countByDoctor_Email(email))
+                .pendingAppointments(
+                        appointmentRepository.countByDoctor_EmailAndStatus(
+                                email, AppointmentStatus.PENDING))
+                .approvedAppointments(
+                        appointmentRepository.countByDoctor_EmailAndStatus(
+                                email, AppointmentStatus.APPROVED))
+                .completedAppointments(
+                        appointmentRepository.countByDoctor_EmailAndStatus(
+                                email, AppointmentStatus.COMPLETED))
+                .rejectedAppointments(
+                        appointmentRepository.countByDoctor_EmailAndStatus(
+                                email, AppointmentStatus.REJECTED))
+                .build();
+    }
+    public PatientDashboardResponse getPatientDashboard(String email) {
+
+        return PatientDashboardResponse.builder()
+                .totalAppointments(
+                        appointmentRepository.countByPatient_Email(email))
+                .pendingAppointments(
+                        appointmentRepository.countByPatient_EmailAndStatus(
+                                email, AppointmentStatus.PENDING))
+                .approvedAppointments(
+                        appointmentRepository.countByPatient_EmailAndStatus(
+                                email, AppointmentStatus.APPROVED))
+                .completedAppointments(
+                        appointmentRepository.countByPatient_EmailAndStatus(
+                                email, AppointmentStatus.COMPLETED))
+                .cancelledAppointments(
+                        appointmentRepository.countByPatient_EmailAndStatus(
+                                email, AppointmentStatus.CANCELLED))
+                .build();
     }
 }

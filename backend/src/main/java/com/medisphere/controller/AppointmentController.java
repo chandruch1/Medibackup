@@ -2,11 +2,14 @@ package com.medisphere.controller;
 
 import com.medisphere.dto.AppointmentRequest;
 import com.medisphere.dto.AppointmentResponse;
+import com.medisphere.dto.DoctorDashboardResponse;
+import com.medisphere.dto.PatientAppointmentRequest;
 import com.medisphere.service.AppointmentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -19,7 +22,10 @@ public class AppointmentController {
 
     private final AppointmentService appointmentService;
 
-    // Book Appointment
+    // ==========================
+    // ADMIN
+    // ==========================
+
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     public AppointmentResponse bookAppointment(
@@ -28,7 +34,6 @@ public class AppointmentController {
         return appointmentService.bookAppointment(request);
     }
 
-    // Get All Appointments
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     public List<AppointmentResponse> getAllAppointments() {
@@ -36,7 +41,6 @@ public class AppointmentController {
         return appointmentService.getAllAppointments();
     }
 
-    // Get Appointment By Id
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public AppointmentResponse getAppointmentById(
@@ -45,7 +49,6 @@ public class AppointmentController {
         return appointmentService.getAppointmentById(id);
     }
 
-    // Update Appointment
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public AppointmentResponse updateAppointment(
@@ -55,7 +58,6 @@ public class AppointmentController {
         return appointmentService.updateAppointment(id, request);
     }
 
-    // Delete Appointment
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public String deleteAppointment(
@@ -89,6 +91,7 @@ public class AppointmentController {
 
         return appointmentService.searchByPatient(patientName);
     }
+
     @GetMapping("/page")
     @PreAuthorize("hasRole('ADMIN')")
     public Page<AppointmentResponse> getAppointmentsWithPagination(
@@ -105,9 +108,9 @@ public class AppointmentController {
                 page,
                 size,
                 sortBy,
-                direction
-        );
+                direction);
     }
+
     @PutMapping("/{id}/complete")
     @PreAuthorize("hasRole('ADMIN')")
     public AppointmentResponse completeAppointment(
@@ -122,5 +125,59 @@ public class AppointmentController {
             @PathVariable Long id) {
 
         return appointmentService.cancelAppointment(id);
+    }
+
+    // ==========================
+    // DOCTOR
+    // ==========================
+
+    @GetMapping("/my")
+    @PreAuthorize("hasRole('DOCTOR')")
+    public List<AppointmentResponse> getMyAppointments(
+            Authentication authentication) {
+
+        return appointmentService.getMyAppointments(authentication.getName());
+    }
+
+    @PutMapping("/{id}/approve")
+    @PreAuthorize("hasRole('DOCTOR')")
+    public AppointmentResponse approveAppointment(
+            @PathVariable Long id) {
+
+        return appointmentService.approveAppointment(id);
+    }
+
+    @PutMapping("/{id}/reject")
+    @PreAuthorize("hasRole('DOCTOR')")
+    public AppointmentResponse rejectAppointment(
+            @PathVariable Long id) {
+
+        return appointmentService.rejectAppointment(id);
+    }
+
+    // ==========================
+    // PATIENT
+    // ==========================
+
+    @PostMapping("/book")
+    @PreAuthorize("hasRole('PATIENT')")
+    public AppointmentResponse patientBookAppointment(
+
+            Authentication authentication,
+
+            @Valid @RequestBody PatientAppointmentRequest request) {
+
+        return appointmentService.bookAppointmentByPatient(
+                authentication.getName(),
+                request);
+    }
+
+    @GetMapping("/doctor/dashboard")
+    @PreAuthorize("hasRole('DOCTOR')")
+    public DoctorDashboardResponse getDoctorDashboard(
+            Authentication authentication) {
+
+        return appointmentService.getDoctorDashboard(
+                authentication.getName());
     }
 }

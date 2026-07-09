@@ -23,7 +23,7 @@ public class DashboardService {
                 .totalPatients(patientRepository.count())
                 .totalAppointments(appointmentRepository.count())
                 .bookedAppointments(
-                        appointmentRepository.countByStatus(AppointmentStatus.BOOKED)
+                        appointmentRepository.countByStatus(AppointmentStatus.PENDING)
                 )
                 .completedAppointments(
                         appointmentRepository.countByStatus(AppointmentStatus.COMPLETED)

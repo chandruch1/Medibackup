@@ -2,6 +2,8 @@ package com.medisphere.dto;
 
 import lombok.*;
 
+import java.time.LocalDate;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -30,4 +32,6 @@ public class DoctorResponse {
     private String availableTime;
 
     private Boolean status;
+
+    private LocalDate dob;
 }

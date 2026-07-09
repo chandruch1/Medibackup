@@ -2,7 +2,9 @@ package com.medisphere.entity;
 
 public enum AppointmentStatus {
 
-    BOOKED,
+    PENDING,
+    APPROVED,
+    REJECTED,
     COMPLETED,
     CANCELLED
 }

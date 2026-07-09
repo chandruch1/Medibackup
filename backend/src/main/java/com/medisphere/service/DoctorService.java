@@ -1,18 +1,21 @@
 package com.medisphere.service;
 
-import com.medisphere.dto.DoctorRequest;
-import com.medisphere.dto.DoctorResponse;
+import com.medisphere.dto.*;
 import com.medisphere.entity.Doctor;
 import com.medisphere.exception.DuplicateResourceException;
 import com.medisphere.exception.ResourceNotFoundException;
 import com.medisphere.repository.DoctorRepository;
+import com.medisphere.security.JwtService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
+
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,6 +24,8 @@ import java.util.stream.Collectors;
 public class DoctorService {
 
     private final DoctorRepository doctorRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
     // Add Doctor
     public DoctorResponse addDoctor(DoctorRequest request) {
@@ -44,6 +49,15 @@ public class DoctorService {
                 .availableDays(request.getAvailableDays())
                 .availableTime(request.getAvailableTime())
                 .status(request.getStatus())
+                .dob(request.getDob())
+                .password(
+                        passwordEncoder.encode(
+                                generatePassword(
+                                        request.getDoctorName(),
+                                        request.getDob()
+                                )
+                        )
+                )
                 .build();
 
         Doctor savedDoctor = doctorRepository.save(doctor);
@@ -97,6 +111,7 @@ public class DoctorService {
         doctor.setAvailableDays(request.getAvailableDays());
         doctor.setAvailableTime(request.getAvailableTime());
         doctor.setStatus(request.getStatus());
+        doctor.setDob(request.getDob());
 
         Doctor updatedDoctor = doctorRepository.save(doctor);
 
@@ -124,6 +139,7 @@ public class DoctorService {
                 .experience(doctor.getExperience())
                 .phone(doctor.getPhone())
                 .email(doctor.getEmail())
+                .dob(doctor.getDob())
                 .consultationFee(doctor.getConsultationFee())
                 .availableDays(doctor.getAvailableDays())
                 .availableTime(doctor.getAvailableTime())
@@ -163,5 +179,74 @@ public class DoctorService {
 
         return doctorRepository.findAll(pageable)
                 .map(this::mapToResponse);
+    }
+
+    private String generatePassword(String doctorName, LocalDate dob) {
+
+        String firstName = doctorName.trim().split(" ")[0];
+
+        int year = dob.getYear();
+
+        return firstName + year;
+    }
+
+    public DoctorLoginResponse login(DoctorLoginRequest request) {
+
+        Doctor doctor = doctorRepository.findByEmail(request.getEmail())
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Doctor not found"));
+
+        if (!passwordEncoder.matches(request.getPassword(), doctor.getPassword())) {
+            throw new RuntimeException("Invalid Password");
+        }
+
+        String token = jwtService.generateToken(doctor.getEmail());
+
+        return DoctorLoginResponse.builder()
+                .token(token)
+                .doctorName(doctor.getDoctorName())
+                .email(doctor.getEmail())
+                .specialization(doctor.getSpecialization())
+                .role("DOCTOR")
+                .build();
+    }
+    public DoctorResponse getDoctorProfile(String email) {
+
+        Doctor doctor = doctorRepository.findByEmail(email)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Doctor not found"));
+
+
+        return mapToResponse(doctor);
+    }
+    public List<DoctorResponse> getAvailableDoctors() {
+
+        return doctorRepository.findAll()
+                .stream()
+                .filter(Doctor::getStatus)
+                .map(this::mapToResponse)
+                .toList();
+    }
+    public String changePassword(
+            String email,
+            ChangePasswordRequest request) {
+
+        Doctor doctor = doctorRepository.findByEmail(email)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Doctor not found"));
+
+        if (!passwordEncoder.matches(
+                request.getOldPassword(),
+                doctor.getPassword())) {
+
+            throw new RuntimeException("Old password is incorrect");
+        }
+
+        doctor.setPassword(
+                passwordEncoder.encode(request.getNewPassword()));
+
+        doctorRepository.save(doctor);
+
+        return "Password changed successfully";
     }
 }

@@ -3,6 +3,8 @@ package com.medisphere.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDate;
+
 @Entity
 @Table(name = "doctors")
 @Getter
@@ -45,4 +47,10 @@ public class Doctor {
 
     @Column(nullable = false)
     private Boolean status;
+
+    @Column(nullable = false)
+    private LocalDate dob;
+
+    @Column(nullable = false)
+    private String password;
 }

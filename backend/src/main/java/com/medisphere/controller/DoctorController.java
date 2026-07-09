@@ -1,13 +1,14 @@
 package com.medisphere.controller;
 
-import com.medisphere.dto.DoctorRequest;
-import com.medisphere.dto.DoctorResponse;
+import com.medisphere.dto.*;
 import com.medisphere.service.DoctorService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import com.medisphere.service.AppointmentService;
 
 import java.util.List;
 
@@ -17,8 +18,31 @@ import java.util.List;
 public class DoctorController {
 
     private final DoctorService doctorService;
+    private final AppointmentService appointmentService;
 
+    // ==========================
+    // Doctor Login
+    // ==========================
+    @PostMapping("/login")
+    public DoctorLoginResponse login(
+            @Valid @RequestBody DoctorLoginRequest request) {
+
+        return doctorService.login(request);
+    }
+
+    // ==========================
+    // Doctor Profile
+    // ==========================
+    @GetMapping("/profile")
+    @PreAuthorize("hasRole('DOCTOR')")
+    public DoctorResponse getDoctorProfile(Authentication authentication) {
+
+        return doctorService.getDoctorProfile(authentication.getName());
+    }
+
+    // ==========================
     // Add Doctor
+    // ==========================
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     public DoctorResponse addDoctor(
@@ -27,7 +51,9 @@ public class DoctorController {
         return doctorService.addDoctor(request);
     }
 
+    // ==========================
     // Get All Doctors
+    // ==========================
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     public List<DoctorResponse> getAllDoctors() {
@@ -35,7 +61,9 @@ public class DoctorController {
         return doctorService.getAllDoctors();
     }
 
+    // ==========================
     // Get Doctor By Id
+    // ==========================
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public DoctorResponse getDoctorById(
@@ -44,7 +72,9 @@ public class DoctorController {
         return doctorService.getDoctorById(id);
     }
 
+    // ==========================
     // Update Doctor
+    // ==========================
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public DoctorResponse updateDoctor(
@@ -54,7 +84,9 @@ public class DoctorController {
         return doctorService.updateDoctor(id, request);
     }
 
+    // ==========================
     // Delete Doctor
+    // ==========================
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public String deleteDoctor(
@@ -65,6 +97,9 @@ public class DoctorController {
         return "Doctor deleted successfully.";
     }
 
+    // ==========================
+    // Search Doctor By Name
+    // ==========================
     @GetMapping("/search/name")
     @PreAuthorize("hasRole('ADMIN')")
     public List<DoctorResponse> searchDoctorByName(
@@ -73,6 +108,9 @@ public class DoctorController {
         return doctorService.searchDoctorByName(name);
     }
 
+    // ==========================
+    // Search Doctor By Specialization
+    // ==========================
     @GetMapping("/search/specialization")
     @PreAuthorize("hasRole('ADMIN')")
     public List<DoctorResponse> searchDoctorBySpecialization(
@@ -81,6 +119,9 @@ public class DoctorController {
         return doctorService.searchDoctorBySpecialization(specialization);
     }
 
+    // ==========================
+    // Pagination
+    // ==========================
     @GetMapping("/page")
     @PreAuthorize("hasRole('ADMIN')")
     public Page<DoctorResponse> getDoctorsWithPagination(
@@ -99,5 +140,31 @@ public class DoctorController {
                 sortBy,
                 direction
         );
+    }
+    @GetMapping("/available")
+    @PreAuthorize("hasRole('PATIENT')")
+    public List<DoctorResponse> getAvailableDoctors() {
+
+        System.out.println("Available Doctors API Called");
+
+        return doctorService.getAvailableDoctors();
+    }
+    @GetMapping("/dashboard")
+    @PreAuthorize("hasRole('DOCTOR')")
+    public DoctorDashboardResponse getDoctorDashboard(
+            Authentication authentication) {
+
+        return appointmentService.getDoctorDashboard(
+                authentication.getName());
+    }
+    @PutMapping("/change-password")
+    @PreAuthorize("hasRole('DOCTOR')")
+    public String changePassword(
+            Authentication authentication,
+            @Valid @RequestBody ChangePasswordRequest request) {
+
+        return doctorService.changePassword(
+                authentication.getName(),
+                request);
     }
 }

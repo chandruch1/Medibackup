@@ -1,15 +1,19 @@
 package com.medisphere.controller;
 
-import com.medisphere.dto.PatientRequest;
-import com.medisphere.dto.PatientResponse;
+import com.medisphere.dto.*;
+import com.medisphere.service.AppointmentService;
 import com.medisphere.service.PatientService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.Page;
+import org.springframework.security.core.Authentication;
+import com.medisphere.dto.AppointmentResponse;
 
 import java.util.List;
+
+
 
 @RestController
 @RequestMapping("/patients")
@@ -17,6 +21,7 @@ import java.util.List;
 public class PatientController {
 
     private final PatientService patientService;
+    private final AppointmentService appointmentService;
 
     // Add Patient
     @PostMapping
@@ -80,6 +85,7 @@ public class PatientController {
 
         return patientService.searchPatientByDisease(disease);
     }
+
     @GetMapping("/page")
     @PreAuthorize("hasRole('ADMIN')")
     public Page<PatientResponse> getPatientsWithPagination(
@@ -99,4 +105,53 @@ public class PatientController {
                 direction
         );
     }
+
+    @PostMapping("/register")
+    public String register(
+            @Valid @RequestBody PatientRegisterRequest request) {
+
+        return patientService.register(request);
+    }
+
+    @PostMapping("/login")
+    public PatientLoginResponse login(
+            @Valid @RequestBody PatientLoginRequest request) {
+
+        return patientService.login(request);
+    }
+
+    @GetMapping("/profile")
+    @PreAuthorize("hasRole('PATIENT')")
+    public PatientResponse getProfile(Authentication authentication) {
+
+        return patientService.getProfile(authentication.getName());
+    }
+
+    @GetMapping("/appointments")
+    @PreAuthorize("hasRole('PATIENT')")
+    public List<AppointmentResponse> getMyAppointments(
+            Authentication authentication) {
+
+        return appointmentService.getMyAppointmentsPatient(
+                authentication.getName());
+    }
+    @GetMapping("/dashboard")
+    @PreAuthorize("hasRole('PATIENT')")
+    public PatientDashboardResponse getDashboard(
+            Authentication authentication) {
+
+        return appointmentService.getPatientDashboard(
+                authentication.getName());
+    }
+    @PutMapping("/change-password")
+    @PreAuthorize("hasRole('PATIENT')")
+    public String changePassword(
+            Authentication authentication,
+            @Valid @RequestBody ChangePasswordRequest request) {
+
+        return patientService.changePassword(
+                authentication.getName(),
+                request);
+    }
+
 }

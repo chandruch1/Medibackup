@@ -3,6 +3,8 @@ package com.medisphere.dto;
 import jakarta.validation.constraints.*;
 import lombok.*;
 
+import java.time.LocalDate;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -43,4 +45,7 @@ public class DoctorRequest {
 
     @NotNull(message = "Status is required")
     private Boolean status;
+
+    @NotNull(message = "Date of Birth is required")
+    private LocalDate dob;
 }
