@@ -301,7 +301,7 @@ public class PatientService {
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Patient not found"));
 
-        // Generate 6-digit OTP
+        // Generate OTP
         String otp = String.format("%06d", new Random().nextInt(999999));
 
         otpRepository.deleteByEmail(request.getEmail());
@@ -319,9 +319,11 @@ public class PatientService {
 
             mailService.sendOtpEmail(request.getEmail(), otp);
 
+            return "OTP sent successfully to your email.";
+
         } catch (Exception e) {
 
-            e.printStackTrace();   // <-- Add this line
+            e.printStackTrace();
 
             System.err.println("Failed to send OTP email: "
                     + e.getMessage());
@@ -329,6 +331,7 @@ public class PatientService {
             return "OTP generated successfully, but email could not be sent.";
         }
     }
+
     public String verifyOtp(VerifyOtpRequest request) {
 
         OtpVerification otp = otpRepository.findByEmail(request.getEmail())
