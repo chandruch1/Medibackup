@@ -10,6 +10,8 @@ import com.medisphere.repository.AppointmentRepository;
 import com.medisphere.repository.PrescriptionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
@@ -20,6 +22,8 @@ public class PrescriptionService {
     private final PrescriptionRepository prescriptionRepository;
     private final AppointmentRepository appointmentRepository;
     private final MailService mailService;
+    private static final Logger logger =
+            LoggerFactory.getLogger(PrescriptionService.class);
 
     // ==========================
     // Add Prescription
@@ -54,15 +58,19 @@ public class PrescriptionService {
         Prescription saved = prescriptionRepository.save(prescription);
 
 // Send prescription email to patient
-        mailService.sendPrescriptionEmail(
-                appointment.getPatient().getEmail(),
-                appointment.getPatient().getPatientName(),
-                appointment.getDoctor().getDoctorName(),
-                saved.getMedicine(),
-                saved.getDosage(),
-                saved.getDuration(),
-                saved.getNotes()
-        );
+        try {
+            mailService.sendPrescriptionEmail(
+                    appointment.getPatient().getEmail(),
+                    appointment.getPatient().getPatientName(),
+                    appointment.getDoctor().getDoctorName(),
+                    saved.getMedicine(),
+                    saved.getDosage(),
+                    saved.getDuration(),
+                    saved.getNotes()
+            );
+        } catch (Exception e) {
+            logger.error("Failed to send prescription email", e);
+        }
 
         return mapToResponse(saved);
     }

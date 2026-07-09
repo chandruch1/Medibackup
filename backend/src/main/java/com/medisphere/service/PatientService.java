@@ -315,9 +315,17 @@ public class PatientService {
 
         otpRepository.save(otpVerification);
 
-        mailService.sendOtpEmail(request.getEmail(), otp);
+        try {
 
-        return "OTP sent successfully to your email.";
+            mailService.sendOtpEmail(request.getEmail(), otp);
+            return "OTP sent successfully to your email.";
+
+        } catch (Exception e) {
+
+            System.err.println("Failed to send OTP email: " + e.getMessage());
+
+            return "OTP generated successfully, but email could not be sent.";
+        }
     }
     public String verifyOtp(VerifyOtpRequest request) {
 

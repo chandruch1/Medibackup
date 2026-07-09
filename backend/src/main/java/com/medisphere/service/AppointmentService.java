@@ -222,13 +222,17 @@ public class AppointmentService {
                 appointmentRepository.save(appointment);
 
 // Send Email
-        mailService.sendAppointmentApprovedEmail(
-                appointment.getPatient().getEmail(),
-                appointment.getPatient().getPatientName(),
-                appointment.getDoctor().getDoctorName(),
-                appointment.getAppointmentDate().toString(),
-                appointment.getAppointmentTime().toString()
-        );
+        try {
+            mailService.sendAppointmentApprovedEmail(
+                    appointment.getPatient().getEmail(),
+                    appointment.getPatient().getPatientName(),
+                    appointment.getDoctor().getDoctorName(),
+                    appointment.getAppointmentDate().toString(),
+                    appointment.getAppointmentTime().toString()
+            );
+        } catch (Exception e) {
+            System.err.println("Failed to send appointment approved email: " + e.getMessage());
+        }
 
         return mapToResponse(updatedAppointment);
     }
@@ -246,11 +250,15 @@ public class AppointmentService {
                 appointmentRepository.save(appointment);
 
 // Send Email
-        mailService.sendAppointmentRejectedEmail(
-                appointment.getPatient().getEmail(),
-                appointment.getPatient().getPatientName(),
-                appointment.getDoctor().getDoctorName()
-        );
+        try {
+            mailService.sendAppointmentRejectedEmail(
+                    appointment.getPatient().getEmail(),
+                    appointment.getPatient().getPatientName(),
+                    appointment.getDoctor().getDoctorName()
+            );
+        } catch (Exception e) {
+            System.err.println("Failed to send appointment rejected email: " + e.getMessage());
+        }
 
         return mapToResponse(updatedAppointment);
     }
@@ -321,13 +329,17 @@ public class AppointmentService {
         Appointment saved = appointmentRepository.save(appointment);
 
 // Send Email
-        mailService.sendAppointmentBookedEmail(
-                patient.getEmail(),
-                patient.getPatientName(),
-                doctor.getDoctorName(),
-                saved.getAppointmentDate().toString(),
-                saved.getAppointmentTime().toString()
-        );
+        try {
+            mailService.sendAppointmentBookedEmail(
+                    patient.getEmail(),
+                    patient.getPatientName(),
+                    doctor.getDoctorName(),
+                    saved.getAppointmentDate().toString(),
+                    saved.getAppointmentTime().toString()
+            );
+        } catch (Exception e) {
+            System.err.println("Failed to send appointment booked email: " + e.getMessage());
+        }
 
         return mapToResponse(saved);
 
