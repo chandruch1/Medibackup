@@ -13,21 +13,29 @@ public class MailService {
 
     public void sendOtpEmail(String toEmail, String otp) {
 
-        SimpleMailMessage message = new SimpleMailMessage();
+        try {
 
-        message.setTo(toEmail);
-        message.setSubject("MediSphere - Password Reset OTP");
+            SimpleMailMessage message = new SimpleMailMessage();
 
-        message.setText(
-                "Hello,\n\n" +
-                        "Your OTP for resetting your MediSphere password is: " +
-                        otp +
-                        "\n\nThis OTP is valid for 5 minutes.\n\n" +
-                        "If you did not request this, please ignore this email.\n\n" +
-                        "Regards,\nMediSphere Team"
-        );
+            message.setTo(toEmail);
+            message.setSubject("MediSphere - Password Reset OTP");
 
-        mailSender.send(message);
+            message.setText(
+                    "Hello,\n\n" +
+                            "Your OTP is: " + otp
+            );
+
+            mailSender.send(message);
+
+            System.out.println("OTP email sent successfully.");
+
+        } catch (Exception e) {
+
+            System.out.println("========== MAIL ERROR ==========");
+            e.printStackTrace();
+            System.out.println("===============================");
+            throw e;
+        }
     }
     public void sendPrescriptionEmail(
             String toEmail,
