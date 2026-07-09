@@ -32,11 +32,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // Skip only login endpoint
         String path = request.getServletPath();
 
-
-        if (path.equals("/auth/login") ||
+        if (path.startsWith("/auth/") ||
                 path.equals("/doctors/login") ||
                 path.equals("/patients/login") ||
-                path.equals("/patients/register")) {
+                path.equals("/patients/register") ||
+                path.equals("/patients/forgot-password") ||
+                path.equals("/patients/verify-otp") ||
+                path.equals("/patients/reset-password") ||
+                path.startsWith("/swagger-ui") ||
+                path.startsWith("/v3/api-docs")) {
 
             filterChain.doFilter(request, response);
             return;
