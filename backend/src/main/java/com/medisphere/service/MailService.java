@@ -17,12 +17,15 @@ public class MailService {
 
             SimpleMailMessage message = new SimpleMailMessage();
 
+            message.setFrom("noreplymedisphere@gmail.com");
             message.setTo(toEmail);
             message.setSubject("MediSphere - Password Reset OTP");
 
             message.setText(
                     "Hello,\n\n" +
-                            "Your OTP is: " + otp
+                            "Your OTP for resetting your MediSphere password is: " + otp +
+                            "\n\nThis OTP is valid for 5 minutes." +
+                            "\n\nRegards,\nMediSphere Team"
             );
 
             mailSender.send(message);
@@ -48,27 +51,22 @@ public class MailService {
 
         SimpleMailMessage message = new SimpleMailMessage();
 
+        message.setFrom("noreplymedisphere@gmail.com");
         message.setTo(toEmail);
         message.setSubject("MediSphere - Your Prescription");
 
         message.setText(
                 "Hello " + patientName + ",\n\n" +
-
                         "Your doctor has added a prescription.\n\n" +
-
                         "Doctor : Dr. " + doctorName + "\n\n" +
-
                         "Medicine : " + medicine + "\n" +
                         "Dosage : " + dosage + "\n" +
                         "Duration : " + duration + "\n" +
                         "Notes : " + notes + "\n\n" +
-
                         "Please follow the prescription carefully.\n\n" +
-
                         "Get Well Soon!\n\n" +
-
-                        "Regards,\n" +
-                        "MediSphere Team");
+                        "Regards,\nMediSphere Team"
+        );
 
         mailSender.send(message);
     }
@@ -80,6 +78,7 @@ public class MailService {
             String time) {
 
         SimpleMailMessage message = new SimpleMailMessage();
+        message.setFrom("noreplymedisphere@gmail.com");
 
         message.setTo(toEmail);
         message.setSubject("MediSphere - Appointment Booked");
@@ -109,6 +108,7 @@ public class MailService {
             String time) {
 
         SimpleMailMessage message = new SimpleMailMessage();
+        message.setFrom("noreplymedisphere@gmail.com");
 
         message.setTo(toEmail);
         message.setSubject("MediSphere - Appointment Approved");
@@ -136,6 +136,7 @@ public class MailService {
             String doctorName) {
 
         SimpleMailMessage message = new SimpleMailMessage();
+        message.setFrom("noreplymedisphere@gmail.com");
 
         message.setTo(toEmail);
         message.setSubject("MediSphere - Appointment Rejected");
