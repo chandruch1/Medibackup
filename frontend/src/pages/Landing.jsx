@@ -37,169 +37,162 @@ function Landing() {
 
     const avatarColors = ["#0d6efd", "#20c997", "#6f42c1", "#fd7e14", "#dc3545", "#198754"];
 
+    const sliderData = [
+        { image: "/firstkural.png", text: "" },
+        { image: "/image 3.jpg", text: "" },
+        { image: "/image 4.jpg", text: "Compassion in Every Step, Care in Every Heart." },
+        { image: "/OIP.webp", text: "Your Comfort. Your Health. Our Mission." }
+    ];
+    const [currentSlide, setCurrentSlide] = useState(0);
+
+    useEffect(() => {
+        const timer = setInterval(() => {
+            setCurrentSlide((prev) => (prev + 1) % sliderData.length);
+        }, 5000);
+        return () => clearInterval(timer);
+    }, []);
+
     return (
         <div style={{ fontFamily: "Inter, sans-serif" }}>
 
-            {/* ── Navbar ──────────────────────────────────────────────────── */}
-            <nav className={`ms-landing-nav ${scrolled ? "scrolled" : ""}`}>
-                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                    <div style={{
-                        width: 38, height: 38, borderRadius: 10,
-                        background: "linear-gradient(135deg, #0d6efd, #20c997)",
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                        color: "#fff", fontSize: 18
-                    }}>
-                        <FaHospital />
+            {/* ── Top Bar ─────────────────────────────────────────────────── */}
+            <div style={{ background: "#0d6efd", color: "#fff", padding: "8px 0", fontSize: 13, fontWeight: 600 }}>
+                <div className="container d-flex justify-content-end align-items-center gap-4">
+                    <span><FaPhone style={{marginRight:6}}/> +91 452 711 3333</span>
+                    <div style={{ display: "flex", gap: 16 }}>
+                        <a href="#" style={{ color: "#fff", textDecoration: "none" }}>Fb</a>
+                        <a href="#" style={{ color: "#fff", textDecoration: "none" }}>Tw</a>
+                        <a href="#" style={{ color: "#fff", textDecoration: "none" }}>In</a>
                     </div>
-                    <span style={{ fontSize: 20, fontWeight: 800, color: "#fff" }}>MediSphere</span>
                 </div>
+            </div>
 
-                <div style={{ display: "flex", gap: 32 }}>
-                    {["About", "Services", "Doctors", "Contact"].map(item => (
-                        <a key={item} href={`#${item.toLowerCase()}`}
-                            style={{ color: "rgba(255,255,255,0.75)", textDecoration: "none",
-                                fontSize: 14, fontWeight: 500, transition: "color 0.2s" }}
-                            onMouseEnter={e => e.target.style.color = "#fff"}
-                            onMouseLeave={e => e.target.style.color = "rgba(255,255,255,0.75)"}
+            {/* ── Main Navbar ─────────────────────────────────────────────── */}
+            <nav style={{ 
+                background: "#fff", 
+                padding: "15px 0",
+                boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
+                position: "sticky", top: 0, zIndex: 1000 
+            }}>
+                <div className="container d-flex justify-content-between align-items-center">
+                    {/* Logo */}
+                    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                        <div style={{
+                            width: 48, height: 48, 
+                            background: "#0d6efd",
+                            display: "flex", alignItems: "center", justifyContent: "center",
+                            color: "#fff", fontSize: 24,
+                            clipPath: "polygon(33% 0, 66% 0, 66% 33%, 100% 33%, 100% 66%, 66% 66%, 66% 100%, 33% 100%, 33% 66%, 0 66%, 0 33%, 33% 33%)"
+                        }}>
+                        </div>
+                        <div style={{ display: "flex", flexDirection: "column", lineHeight: 1.1 }}>
+                            <span style={{ fontSize: 22, fontWeight: 800, color: "#111", letterSpacing: 0.5 }}>MEDICARE</span>
+                            <span style={{ fontSize: 12, fontWeight: 600, color: "#6c757d", letterSpacing: 1 }}>HEALTH CENTER</span>
+                        </div>
+                    </div>
+
+                    {/* Links */}
+                    <div className="d-none d-lg-flex" style={{ gap: 32, alignItems: "center" }}>
+                        {["HOME", "ABOUT US", "SERVICES", "SPECIALITIES", "CONTACT"].map(item => (
+                            <a key={item} href={`#${item.toLowerCase().replace(" ", "-")}`}
+                                style={{ color: "#222", textDecoration: "none",
+                                    fontSize: 14, fontWeight: 700, transition: "color 0.2s" }}
+                                onMouseEnter={e => e.target.style.color = "#0d6efd"}
+                                onMouseLeave={e => e.target.style.color = "#222"}
+                            >
+                                {item}
+                            </a>
+                        ))}
+                    </div>
+
+                    {/* Appointment and Login Tabs */}
+                    <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+                        <Link to="/login" style={{
+                            padding: "8px 20px", borderRadius: 6, fontSize: 14, fontWeight: 700,
+                            color: "#0d6efd", border: "2px solid #0d6efd",
+                            textDecoration: "none", display: "flex", alignItems: "center", gap: 6,
+                            transition: "all 0.2s"
+                        }}
+                        onMouseEnter={e => { e.currentTarget.style.background = "#0d6efd"; e.currentTarget.style.color = "#fff"; }}
+                        onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#0d6efd"; }}
                         >
-                            {item}
-                        </a>
-                    ))}
-                </div>
-
-                <div style={{ display: "flex", gap: 10 }}>
-                    <Link to="/login" style={{
-                        padding: "9px 20px", borderRadius: 8, fontSize: 14, fontWeight: 600,
-                        border: "1.5px solid rgba(255,255,255,0.3)", color: "#fff",
-                        textDecoration: "none", transition: "all 0.2s",
-                        background: "rgba(255,255,255,0.08)"
-                    }}>
-                        Sign In
-                    </Link>
-                    <Link to="/register" style={{
-                        padding: "9px 20px", borderRadius: 8, fontSize: 14, fontWeight: 600,
-                        background: "linear-gradient(135deg, #0d6efd, #20c997)", color: "#fff",
-                        textDecoration: "none", boxShadow: "0 4px 12px rgba(13,110,253,0.4)"
-                    }}>
-                        Get Started
-                    </Link>
+                            LOGIN
+                        </Link>
+                        <Link to="/register" style={{
+                            padding: "10px 24px", borderRadius: 6, fontSize: 14, fontWeight: 700,
+                            background: "linear-gradient(135deg, #f39c12, #d68910)", color: "#fff",
+                            textDecoration: "none", display: "flex", alignItems: "center", gap: 8,
+                            boxShadow: "0 4px 12px rgba(243, 156, 18, 0.4)", border: "none",
+                            transition: "transform 0.2s"
+                        }}
+                        onMouseEnter={e => e.currentTarget.style.transform = "translateY(-2px)"}
+                        onMouseLeave={e => e.currentTarget.style.transform = "none"}
+                        >
+                            <FaCalendarCheck /> APPOINTMENT
+                        </Link>
+                    </div>
                 </div>
             </nav>
 
-            {/* ── Hero ────────────────────────────────────────────────────── */}
-            <section className="ms-hero" id="home">
-                <div className="container" style={{ position: "relative", zIndex: 1 }}>
-                    <div className="row align-items-center" style={{ minHeight: "100vh" }}>
-                        <div className="col-lg-6" style={{ color: "#fff" }}>
-                            <div style={{
-                                display: "inline-flex", alignItems: "center", gap: 8,
-                                background: "rgba(32,201,151,0.15)", border: "1px solid rgba(32,201,151,0.3)",
-                                borderRadius: 20, padding: "6px 16px", marginBottom: 24,
-                                fontSize: 13, color: "#20c997", fontWeight: 600
-                            }}>
-                                <FaHeartbeat /> Trusted by 10,000+ Patients
-                            </div>
-
-                            <h1 style={{ fontSize: 58, fontWeight: 900, lineHeight: 1.1, marginBottom: 24 }}>
-                                Your Health<br />
-                                Deserves the<br />
-                                <span style={{ color: "#20c997" }}>Best Care</span>
-                            </h1>
-
-                            <p style={{ fontSize: 18, color: "rgba(255,255,255,0.65)", lineHeight: 1.8, marginBottom: 36, maxWidth: 460 }}>
-                                Connect with top specialists, book appointments instantly, and manage your healthcare journey — all in one seamless platform.
-                            </p>
-
-                            <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
-                                <Link to="/register" style={{
-                                    display: "flex", alignItems: "center", gap: 8,
-                                    padding: "14px 28px", borderRadius: 12, fontSize: 15, fontWeight: 700,
-                                    background: "linear-gradient(135deg, #0d6efd, #0a58ca)", color: "#fff",
-                                    textDecoration: "none", boxShadow: "0 8px 24px rgba(13,110,253,0.4)"
-                                }}>
-                                    Book Appointment <FaArrowRight />
-                                </Link>
-                                <Link to="/login" style={{
-                                    display: "flex", alignItems: "center", gap: 8,
-                                    padding: "14px 28px", borderRadius: 12, fontSize: 15, fontWeight: 700,
-                                    background: "rgba(255,255,255,0.1)", color: "#fff",
-                                    textDecoration: "none", border: "2px solid rgba(255,255,255,0.2)"
-                                }}>
-                                    Sign In
-                                </Link>
-                            </div>
-                        </div>
-
-                        {/* Right: Floating Cards */}
-                        <div className="col-lg-6 d-none d-lg-flex justify-content-center">
-                            <div style={{ position: "relative", width: 400, height: 460 }}>
-                                {/* Main card */}
-                                <div style={{
-                                    position: "absolute", top: 40, left: 20, right: 20,
-                                    background: "rgba(255,255,255,0.95)", borderRadius: 20, padding: 24,
-                                    boxShadow: "0 20px 60px rgba(0,0,0,0.3)"
-                                }}>
-                                    <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
-                                        <div style={{ width: 48, height: 48, borderRadius: 12,
-                                            background: "linear-gradient(135deg, #0d6efd, #20c997)",
-                                            display: "flex", alignItems: "center", justifyContent: "center",
-                                            fontSize: 22, color: "#fff" }}>
-                                            <FaUserMd />
-                                        </div>
-                                        <div>
-                                            <div style={{ fontWeight: 700, color: "#212529", fontSize: 15 }}>Dr. Priya Sharma</div>
-                                            <div style={{ fontSize: 12, color: "#6c757d" }}>Cardiologist • 12 years exp.</div>
-                                        </div>
-                                    </div>
-                                    {["Mon", "Tue", "Wed", "Thu", "Fri"].map((day, i) => (
-                                        <button key={day} style={{
-                                            padding: "6px 14px", borderRadius: 8, border: "none",
-                                            background: i === 2 ? "#0d6efd" : "#f1f3f5",
-                                            color: i === 2 ? "#fff" : "#495057",
-                                            fontSize: 12, fontWeight: 600, cursor: "pointer",
-                                            marginRight: 6, marginBottom: 8
-                                        }}>{day}</button>
-                                    ))}
-                                    <div style={{ marginTop: 8, padding: "12px 16px", background: "#e8f0fe",
-                                        borderRadius: 10, fontSize: 13, fontWeight: 600, color: "#0d6efd",
-                                        display: "flex", justifyContent: "space-between" }}>
-                                        <span>Appointment Booked</span>
-                                        <span>✓</span>
-                                    </div>
-                                </div>
-
-                                {/* Floating stat */}
-                                <div style={{
-                                    position: "absolute", bottom: 40, left: 0,
-                                    background: "#fff", borderRadius: 14, padding: "12px 18px",
-                                    boxShadow: "0 10px 30px rgba(0,0,0,0.2)",
-                                    display: "flex", alignItems: "center", gap: 10
-                                }}>
-                                    <div style={{ fontSize: 24, color: "#20c997" }}><FaHeartbeat /></div>
-                                    <div>
-                                        <div style={{ fontSize: 16, fontWeight: 800, color: "#212529" }}>10,000+</div>
-                                        <div style={{ fontSize: 11, color: "#6c757d" }}>Happy Patients</div>
-                                    </div>
-                                </div>
-
-                                {/* Rating badge */}
-                                <div style={{
-                                    position: "absolute", top: 20, right: 0,
-                                    background: "#fff", borderRadius: 14, padding: "10px 16px",
-                                    boxShadow: "0 10px 30px rgba(0,0,0,0.2)",
-                                    display: "flex", alignItems: "center", gap: 6
-                                }}>
-                                    <FaStar style={{ color: "#ffc107" }} />
-                                    <span style={{ fontWeight: 800, fontSize: 15 }}>4.9</span>
-                                    <span style={{ fontSize: 11, color: "#6c757d" }}>Rating</span>
+            {/* ── Hero Slider ──────────────────────────────────────────────── */}
+            <section id="home" style={{ position: "relative", height: "100vh", overflow: "hidden" }}>
+                {sliderData.map((slide, index) => (
+                    <div
+                        key={index}
+                        style={{
+                            position: "absolute",
+                            top: 0,
+                            left: 0,
+                            width: "100%",
+                            height: "100%",
+                            opacity: index === currentSlide ? 1 : 0,
+                            transition: "opacity 1s ease-in-out",
+                            zIndex: index === currentSlide ? 1 : 0
+                        }}
+                    >
+                        <div
+                            style={{
+                                position: "absolute",
+                                top: 0,
+                                left: 0,
+                                width: "100%",
+                                height: "100%",
+                                backgroundImage: `url("${slide.image}")`,
+                                backgroundSize: "cover",
+                                backgroundPosition: "center",
+                                filter: "brightness(0.5)"
+                            }}
+                        />
+                        <div className="container" style={{ position: "relative", zIndex: 2, height: "100%" }}>
+                            <div className="row align-items-center justify-content-center" style={{ height: "100%" }}>
+                                <div className="col-12 text-center" style={{ color: "#fff", padding: "0 20px" }}>
+                                    <h1 style={{ fontSize: 58, fontWeight: 900, lineHeight: 1.2, textShadow: "0 4px 15px rgba(0,0,0,0.8)" }}>
+                                        {slide.text}
+                                    </h1>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
+                ))}
             </section>
 
 
+
+            {/* ── Login Option ────────────────────────────────────────────── */}
+            <section id="login-option" style={{ padding: "60px 0", background: "#fff", textAlign: "center", borderBottom: "1px solid #eee" }}>
+                <div className="container">
+                    <h3 style={{ fontSize: 28, fontWeight: 800, marginBottom: 16 }}>Welcome Back to Medicare Health Center</h3>
+                    <p style={{ color: "#6c757d", marginBottom: 24, fontSize: 16 }}>Access your patient dashboard, manage appointments, and view medical records.</p>
+                    <Link to="/login" style={{
+                        display: "inline-flex", alignItems: "center", gap: 8,
+                        padding: "14px 40px", borderRadius: 12, fontSize: 16, fontWeight: 700,
+                        background: "linear-gradient(135deg, #0d6efd, #20c997)", color: "#fff",
+                        textDecoration: "none", boxShadow: "0 8px 24px rgba(13,110,253,0.3)"
+                    }}>
+                        Login to your Account <FaArrowRight />
+                    </Link>
+                </div>
+            </section>
 
             {/* ── About ───────────────────────────────────────────────────── */}
             <section id="about" style={{ padding: "80px 0", background: "#f8f9fa" }}>
@@ -219,13 +212,13 @@ function Landing() {
                             <div style={{ display: "inline-flex", alignItems: "center", gap: 8,
                                 background: "#e8f0fe", borderRadius: 20, padding: "4px 14px", marginBottom: 16,
                                 fontSize: 12, color: "#0d6efd", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>
-                                About MediSphere
+                                About Medicare Health Center
                             </div>
                             <h2 style={{ fontSize: 36, fontWeight: 800, marginBottom: 16, lineHeight: 1.2 }}>
                                 Transforming Healthcare, One Patient at a Time
                             </h2>
                             <p style={{ color: "#6c757d", fontSize: 16, lineHeight: 1.8, marginBottom: 24 }}>
-                                MediSphere is a comprehensive healthcare management platform designed to bridge the gap between patients and healthcare providers. We make quality healthcare accessible, affordable, and efficient.
+                                Medicare Health Center is a comprehensive healthcare management platform designed to bridge the gap between patients and healthcare providers. We make quality healthcare accessible, affordable, and efficient.
                             </p>
                             <ul style={{ listStyle: "none", padding: 0 }}>
                                 {["Verified & certified doctors", "Secure patient data management", "Instant appointment confirmation", "Digital prescription delivery"].map(item => (
@@ -246,7 +239,7 @@ function Landing() {
                                 background: "linear-gradient(135deg, #0d6efd, #0a58ca)", color: "#fff",
                                 textDecoration: "none", marginTop: 8, boxShadow: "0 6px 20px rgba(13,110,253,0.35)"
                             }}>
-                                Join MediSphere <FaArrowRight />
+                                Join Medicare Health Center <FaArrowRight />
                             </Link>
                         </div>
                     </div>
@@ -448,10 +441,10 @@ function Landing() {
                                 color: "#fff", fontSize: 14 }}>
                                 <FaHospital />
                             </div>
-                            <span style={{ color: "#fff", fontWeight: 700 }}>MediSphere</span>
+                            <span style={{ color: "#fff", fontWeight: 700 }}>Medicare Health Center</span>
                         </div>
                         <p style={{ margin: 0, fontSize: 13 }}>
-                            © 2025 MediSphere. All rights reserved.
+                            © 2025 Medicare Health Center. All rights reserved.
                         </p>
                         <div style={{ display: "flex", gap: 20 }}>
                             <Link to="/login" style={{ color: "rgba(255,255,255,0.6)", textDecoration: "none", fontSize: 13 }}>Sign In</Link>

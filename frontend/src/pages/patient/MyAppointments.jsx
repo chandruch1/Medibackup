@@ -6,6 +6,7 @@ import { FaCalendarCheck, FaFileMedical, FaEdit, FaTrash } from "react-icons/fa"
 import { getMyAppointmentsPatient, deleteAppointment } from "../../services/appointmentService";
 import { getMyPrescriptions } from "../../services/prescriptionService";
 import RescheduleModal from "../../components/appointment/RescheduleModal";
+import ConfirmDialog from "../../components/common/ConfirmDialog";
 import { toast } from "react-toastify";
 
 function PatientAppointments() {
@@ -15,6 +16,8 @@ function PatientAppointments() {
     const [filter, setFilter]     = useState("ALL");
     const [expanded, setExpanded] = useState(null);
     const [reschedule, setReschedule] = useState(null);
+    const [showConfirm, setShowConfirm] = useState(false);
+    const [toDelete, setToDelete] = useState(null);
 
     const load = () => {
         setLoading(true);
@@ -24,16 +27,18 @@ function PatientAppointments() {
             .finally(() => setLoading(false));
     };
 
-    const handleDelete = async (id) => {
-        if (!window.confirm("Are you sure you want to delete this appointment?")) return;
+    const handleDelete = async () => {
         try {
-            await deleteAppointment(id);
+            await deleteAppointment(toDelete);
             toast.success("Appointment deleted successfully");
             load();
         } catch (err) {
             console.error(err);
             const msg = err.response?.data?.message || err.response?.data || "Failed to delete appointment";
             toast.error(typeof msg === "string" ? msg : "Failed to delete appointment");
+        } finally {
+            setShowConfirm(false);
+            setToDelete(null);
         }
     };
 
@@ -116,7 +121,7 @@ function PatientAppointments() {
                                         )}
                                         <button className="ms-btn ms-btn-sm" style={{
                                             background: "rgba(220,53,69,0.1)", color: "#dc3545", border: "none"
-                                        }} onClick={() => handleDelete(a.id)}>
+                                        }} onClick={() => { setToDelete(a.id); setShowConfirm(true); }}>
                                             <FaTrash /> Delete
                                         </button>
                                         {presc && (
@@ -170,6 +175,10 @@ function PatientAppointments() {
                     onSuccess={load}
                 />
             )}
+
+            <ConfirmDialog show={showConfirm} title="Delete Appointment"
+                message="Are you sure you want to delete this appointment?"
+                onConfirm={handleDelete} onCancel={() => { setShowConfirm(false); setToDelete(null); }} />
         </PatientLayout>
     );
 }

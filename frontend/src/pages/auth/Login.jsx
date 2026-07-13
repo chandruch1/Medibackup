@@ -68,184 +68,134 @@ function Login() {
     const isEmail = activeTab !== "ADMIN";
 
     return (
-        <div className="ms-login-page">
-            {/* Left Panel */}
-            <div className="ms-login-left">
-                <div style={{ marginBottom: 48 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 32 }}>
-                        <div style={{
-                            width: 56, height: 56, borderRadius: 14,
-                            background: "linear-gradient(135deg, #0d6efd, #20c997)",
-                            display: "flex", alignItems: "center", justifyContent: "center",
-                            fontSize: 26, color: "#fff"
-                        }}>
-                            <FaHospital />
-                        </div>
-                        <div>
-                            <div style={{ fontSize: 26, fontWeight: 800, letterSpacing: "-0.5px" }}>MediSphere</div>
-                            <div style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", letterSpacing: 1 }}>HEALTHCARE SYSTEM</div>
-                        </div>
-                    </div>
-                    <h1 style={{ fontSize: 42, fontWeight: 800, lineHeight: 1.2, marginBottom: 16 }}>
-                        Your Health,<br />
-                        <span style={{ color: "#20c997" }}>Our Priority</span>
-                    </h1>
-                    <p style={{ color: "rgba(255,255,255,0.6)", fontSize: 16, maxWidth: 380, lineHeight: 1.7 }}>
-                        Connecting doctors, patients, and administrators in one seamless healthcare platform.
-                    </p>
-                </div>
+        <div style={{
+            minHeight: "100vh",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            background: activeTab === "ADMIN" ? "#000" : "#f8f9fa",
+            position: "relative",
+            overflow: "hidden",
+            fontFamily: "Inter, sans-serif",
+            transition: "background 0.3s ease"
+        }}>
+            {/* Decorative Background Shapes */}
+            {activeTab !== "ADMIN" && (
+                <>
+                    <div style={{ position: "absolute", bottom: "-10%", left: "-5%", width: "40%", height: "60%", background: "#8a4af3", borderRadius: "50%", filter: "blur(80px)", opacity: 0.6, zIndex: 0 }} />
+                    <div style={{ position: "absolute", bottom: "-20%", right: "-10%", width: "50%", height: "70%", background: "#20c997", borderRadius: "50%", filter: "blur(100px)", opacity: 0.5, zIndex: 0 }} />
+                </>
+            )}
 
-                <div style={{ display: "flex", gap: 32 }}>
-                    {["500+ Doctors", "10k+ Patients", "50k+ Appointments"].map(stat => (
-                        <div key={stat}>
-                            <div style={{ fontSize: 20, fontWeight: 700, color: "#20c997" }}>{stat.split(" ")[0]}</div>
-                            <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)" }}>{stat.split(" ").slice(1).join(" ")}</div>
-                        </div>
-                    ))}
+            {/* Top Logo */}
+            <div style={{ position: "absolute", top: 40, display: "flex", flexDirection: "column", alignItems: "center", zIndex: 10 }}>
+                <div style={{ display: "flex", gap: 4, marginBottom: 8 }}>
+                    <div style={{ width: 16, height: 16, borderRadius: "50%", background: "#ff6b6b" }} />
+                    <div style={{ width: 16, height: 16, borderRadius: "50%", background: "#20c997" }} />
+                    <div style={{ width: 16, height: 16, borderRadius: "50%", background: "#0d6efd" }} />
+                    <div style={{ width: 16, height: 16, borderRadius: "50%", background: "#fcc419" }} />
                 </div>
+                <div style={{ fontSize: 16, fontWeight: 800, color: activeTab === "ADMIN" ? "#fff" : "#333", letterSpacing: 1, transition: "color 0.3s ease" }}>MEDICARE LOGO</div>
             </div>
 
-            {/* Right Panel */}
-            <div className="ms-login-right">
-                <div className="ms-login-card">
-                    {/* Header */}
-                    <div style={{ textAlign: "center", marginBottom: 28 }}>
-                        <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 6 }}>Sign In</h2>
-                        <p style={{ color: "var(--gray-500)", fontSize: 14 }}>Access your MediSphere portal</p>
-                    </div>
+            {/* Main Card */}
+            <div style={{
+                display: "flex",
+                width: "900px",
+                maxWidth: "95%",
+                background: "#fff",
+                borderRadius: 16,
+                boxShadow: "0 20px 40px rgba(0,0,0,0.08)",
+                overflow: "hidden",
+                zIndex: 10,
+                minHeight: 500
+            }}>
+                {/* Left Side (Image) */}
+                <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: 40, background: "#fff" }}>
+                    <img src={activeTab === "ADMIN" ? "/Admin.png" : (activeTab === "DOCTOR" ? "/doctor.jpg" : "/patient.png")} alt="Login Illustration" style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }} />
+                </div>
 
+                {/* Vertical Divider */}
+                <div style={{ width: 1, background: "#f0f0f0", margin: "40px 0" }} />
+
+                {/* Right Side (Form) */}
+                <div style={{ flex: 1, padding: "50px 60px", display: "flex", flexDirection: "column", justifyContent: "center" }}>
+                    
                     {/* Tabs */}
-                    <div style={{
-                        display: "flex", background: "var(--gray-100)",
-                        borderRadius: 10, padding: 4, marginBottom: 28
-                    }}>
+                    <div style={{ display: "flex", gap: 10, marginBottom: 30, justifyContent: "center" }}>
                         {TABS.map(tab => (
-                            <button
-                                key={tab.key}
-                                onClick={() => { setActiveTab(tab.key); setError(""); setIdentifier(""); setPassword(""); }}
+                            <button key={tab.key} onClick={() => { setActiveTab(tab.key); setError(""); setIdentifier(""); setPassword(""); }}
                                 style={{
-                                    flex: 1, padding: "9px 4px", border: "none", cursor: "pointer",
-                                    borderRadius: 8, fontSize: 13, fontWeight: 600,
-                                    display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-                                    transition: "all 0.2s",
-                                    background: activeTab === tab.key ? "#fff" : "transparent",
-                                    color: activeTab === tab.key ? tab.color : "var(--gray-500)",
-                                    boxShadow: activeTab === tab.key ? "0 2px 8px rgba(0,0,0,0.1)" : "none",
-                                }}
-                            >
-                                {tab.icon} {tab.label}
+                                    padding: "6px 12px", border: "none", borderRadius: 20, fontSize: 11, fontWeight: 700, cursor: "pointer",
+                                    background: activeTab === tab.key ? tab.color : "#f1f3f5",
+                                    color: activeTab === tab.key ? "#fff" : "#888",
+                                    transition: "all 0.2s"
+                                }}>
+                                {tab.label}
                             </button>
                         ))}
                     </div>
 
-                    {/* Error */}
-                    {error && (
-                        <div style={{
-                            background: "rgba(220,53,69,0.08)", border: "1px solid rgba(220,53,69,0.2)",
-                            borderRadius: 8, padding: "10px 14px", marginBottom: 16,
-                            color: "#dc3545", fontSize: 13
-                        }}>
-                            {error}
-                        </div>
-                    )}
+                    <div style={{ marginBottom: 30 }}>
+                        <div style={{ width: 24, height: 2, background: activeTab === "ADMIN" ? "#8a4af3" : activeColor, marginBottom: 12 }} />
+                        <h2 style={{ fontSize: 16, fontWeight: 700, color: "#555" }}>
+                            Login as a {activeTab.charAt(0) + activeTab.slice(1).toLowerCase()} User
+                        </h2>
+                    </div>
 
-                    {/* Form */}
-                    <form onSubmit={handleLogin}>
-                        {/* Identifier */}
-                        <div className="ms-form-group">
-                            <label className="ms-form-label">
-                                {isEmail ? "Email Address" : "Username"}
-                            </label>
-                            <div style={{ position: "relative" }}>
-                                <span style={{
-                                    position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)",
-                                    color: "var(--gray-400)", fontSize: 15
-                                }}>
-                                    {isEmail ? <FaEnvelope /> : <FaUser />}
-                                </span>
-                                <input
-                                    type={isEmail ? "email" : "text"}
-                                    className="ms-form-control"
-                                    style={{ paddingLeft: 38 }}
-                                    value={identifier}
-                                    onChange={(e) => setIdentifier(e.target.value)}
-                                    placeholder={isEmail ? "doctor@hospital.com" : "admin"}
-                                    required
-                                />
-                            </div>
+                    {error && <div style={{ color: "#dc3545", fontSize: 13, marginBottom: 16 }}>{error}</div>}
+
+                    <form onSubmit={handleLogin} style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+                        <div style={{ position: "relative" }}>
+                            <input type={isEmail ? "email" : "text"} required
+                                value={identifier} onChange={e => setIdentifier(e.target.value)}
+                                placeholder={isEmail ? "johndoe@xyz.com" : "admin_username"}
+                                style={{
+                                    width: "100%", padding: "14px 40px 14px 20px", borderRadius: 30,
+                                    border: "1px solid #e4e4e4", fontSize: 14, outline: "none", color: "#333",
+                                    background: "#fff"
+                                }} />
+                            <FaUser style={{ position: "absolute", right: 20, top: "50%", transform: "translateY(-50%)", color: "#ccc" }} />
                         </div>
 
-                        {/* Password */}
-                        <div className="ms-form-group">
-                            <label className="ms-form-label">Password</label>
-                            <div style={{ position: "relative" }}>
-                                <span style={{
-                                    position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)",
-                                    color: "var(--gray-400)", fontSize: 15
-                                }}>
-                                    <FaLock />
-                                </span>
-                                <input
-                                    type={showPass ? "text" : "password"}
-                                    className="ms-form-control"
-                                    style={{ paddingLeft: 38, paddingRight: 40 }}
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    placeholder="••••••••"
-                                    required
-                                />
-                                <button
-                                    type="button"
-                                    onClick={() => setShowPass(!showPass)}
-                                    style={{
-                                        position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)",
-                                        background: "none", border: "none", cursor: "pointer",
-                                        color: "var(--gray-400)", fontSize: 15
-                                    }}
-                                >
-                                    {showPass ? <FaEyeSlash /> : <FaEye />}
-                                </button>
-                            </div>
+                        <div style={{ position: "relative" }}>
+                            <input type={showPass ? "text" : "password"} required
+                                value={password} onChange={e => setPassword(e.target.value)}
+                                placeholder="••••••••"
+                                style={{
+                                    width: "100%", padding: "14px 40px 14px 20px", borderRadius: 30,
+                                    border: "1px solid #e4e4e4", fontSize: 14, outline: "none", color: "#333",
+                                    background: "#fff"
+                                }} />
+                            <FaLock style={{ position: "absolute", right: 20, top: "50%", transform: "translateY(-50%)", color: "#ccc" }} />
                         </div>
 
-                        {/* Forgot Password — only for patients */}
-                        {activeTab === "PATIENT" && (
-                            <div style={{ textAlign: "right", marginTop: -10, marginBottom: 16 }}>
-                                <Link to="/forgot-password" style={{ fontSize: 13, color: activeColor }}>
-                                    Forgot Password?
-                                </Link>
-                            </div>
-                        )}
-
-                        {/* Submit */}
-                        <button
-                            type="submit"
-                            className="ms-btn ms-btn-primary w-100"
-                            disabled={loading}
+                        <button type="submit" disabled={loading}
                             style={{
-                                justifyContent: "center",
-                                background: `linear-gradient(135deg, ${activeColor}, ${activeColor}cc)`,
-                                boxShadow: `0 4px 12px ${activeColor}40`
-                            }}
-                        >
-                            {loading ? "Signing in..." : `Sign in as ${activeTab.charAt(0) + activeTab.slice(1).toLowerCase()}`}
+                                width: "100%", padding: "14px", borderRadius: 30, border: "none",
+                                background: activeTab === "ADMIN" ? "#8a4af3" : activeColor, 
+                                color: "#fff", fontSize: 14, fontWeight: 700, letterSpacing: 2,
+                                marginTop: 10, cursor: "pointer",
+                                boxShadow: `0 4px 14px ${activeTab === "ADMIN" ? "#8a4af366" : activeColor + "66"}`
+                            }}>
+                            {loading ? "LOGGING IN..." : "LOGIN"}
                         </button>
                     </form>
 
-                    {/* Register Link */}
-                    {activeTab === "PATIENT" && (
-                        <p style={{ textAlign: "center", marginTop: 20, fontSize: 14, color: "var(--gray-500)" }}>
-                            New patient?{" "}
-                            <Link to="/register" style={{ color: activeColor, fontWeight: 600 }}>
-                                Create an account
-                            </Link>
-                        </p>
-                    )}
-
-                    <p style={{ textAlign: "center", marginTop: 16, fontSize: 12, color: "var(--gray-400)" }}>
-                        <Link to="/" style={{ color: "var(--gray-400)" }}>← Back to Home</Link>
-                    </p>
+                    <div style={{ textAlign: "center", marginTop: 24, fontSize: 12, color: "#888" }}>
+                        <div style={{ marginBottom: 6 }}>Forget your password?</div>
+                        <Link to={activeTab === "PATIENT" ? "/forgot-password" : "#"} style={{ color: activeTab === "ADMIN" ? "#8a4af3" : activeColor, textDecoration: "none", fontWeight: 700 }}>Get help Signed in.</Link>
+                    </div>
                 </div>
+            </div>
+
+            <div style={{ position: "absolute", bottom: 20, fontSize: 12, color: "#888", zIndex: 10 }}>
+                Terms of use. Privacy policy
+            </div>
+            
+            <div style={{ position: "absolute", bottom: 20, left: 20, zIndex: 10 }}>
+                <Link to="/" style={{ color: "#888", fontSize: 12, textDecoration: "none" }}>← Back to Home</Link>
             </div>
         </div>
     );
