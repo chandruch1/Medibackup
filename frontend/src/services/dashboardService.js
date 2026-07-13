@@ -1,35 +1,22 @@
-import { getDoctors } from "./doctorService";
-import { getPatients } from "./patientService";
-import { getAppointments } from "./appointmentService";
+import api from "../api/api";
 
+// ── Admin Dashboard (single API call) ─────────────────────────────────────────
 export const getDashboardData = async () => {
+    const response = await api.get("/dashboard");
+    return response.data;
+    // { totalDoctors, totalPatients, totalAppointments, bookedAppointments, completedAppointments, cancelledAppointments }
+};
 
-    const doctors = await getDoctors();
+// ── Doctor Dashboard ──────────────────────────────────────────────────────────
+export const getDoctorDashboard = async () => {
+    const response = await api.get("/doctors/dashboard");
+    return response.data;
+    // { totalAppointments, pendingAppointments, approvedAppointments, completedAppointments, rejectedAppointments }
+};
 
-    const patients = await getPatients();
-
-    const appointments = await getAppointments();
-
-    return {
-
-        totalDoctors: doctors.length,
-
-        totalPatients: patients.length,
-
-        totalAppointments: appointments.length,
-
-        completedAppointments: appointments.filter(
-            appointment => appointment.status === "COMPLETED"
-        ).length,
-
-        cancelledAppointments: appointments.filter(
-            appointment => appointment.status === "CANCELLED"
-        ).length,
-
-        bookedAppointments: appointments.filter(
-            appointment => appointment.status === "BOOKED"
-        ).length
-
-    };
-
+// ── Patient Dashboard ─────────────────────────────────────────────────────────
+export const getPatientDashboard = async () => {
+    const response = await api.get("/patients/dashboard");
+    return response.data;
+    // { totalAppointments, pendingAppointments, approvedAppointments, completedAppointments, cancelledAppointments }
 };

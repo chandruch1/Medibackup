@@ -1,30 +1,18 @@
-import Navbar from "../components/layout/Navbar";
-import Sidebar from "../components/layout/Sidebar";
+import AdminSidebar from "../components/layout/Sidebar";
+import TopNavbar from "../components/layout/Navbar";
 
-function AdminLayout({ children }) {
-
+function AdminLayout({ children, title, subtitle }) {
     return (
-
-        <div className="d-flex">
-
-            <Sidebar />
-
-            <div className="flex-grow-1">
-
-                <Navbar />
-
-                <div className="container-fluid p-4">
-
+        <div style={{ display: "flex" }}>
+            <AdminSidebar />
+            <div className="ms-main-content">
+                <TopNavbar title={title} subtitle={subtitle} />
+                <div className="ms-page">
                     {children}
-
                 </div>
-
             </div>
-
         </div>
-
     );
-
 }
 
 export default AdminLayout;

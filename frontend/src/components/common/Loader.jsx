@@ -1,25 +1,10 @@
-function Loader() {
-
+function Loader({ text = "Loading..." }) {
     return (
-
-        <div className="text-center mt-5">
-
-            <div
-                className="spinner-border text-primary"
-                role="status"
-            >
-            </div>
-
-            <p className="mt-2">
-
-                Loading...
-
-            </p>
-
+        <div className="ms-loader">
+            <div className="ms-spinner" />
+            <span className="ms-loader-text">{text}</span>
         </div>
-
     );
-
 }
 
 export default Loader;

@@ -50,7 +50,7 @@ public class AppointmentController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'DOCTOR', 'PATIENT')")
     public AppointmentResponse updateAppointment(
             @PathVariable Long id,
             @Valid @RequestBody AppointmentRequest request) {
@@ -59,7 +59,7 @@ public class AppointmentController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'PATIENT')")
     public String deleteAppointment(
             @PathVariable Long id) {
 

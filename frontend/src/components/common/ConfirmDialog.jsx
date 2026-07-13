@@ -1,83 +1,43 @@
-function ConfirmDialog({
+import { FaExclamationTriangle, FaTimes } from "react-icons/fa";
 
-                           show,
-                           title,
-                           message,
-                           onConfirm,
-                           onCancel
-
-                       }) {
-
-    if (!show) {
-
-        return null;
-
-    }
+function ConfirmDialog({ show, title, message, onConfirm, onCancel, confirmText = "Delete", confirmClass = "danger" }) {
+    if (!show) return null;
 
     return (
-
-        <div
-            className="modal fade show"
-            style={{
-                display: "block",
-                backgroundColor: "rgba(0,0,0,0.5)"
-            }}
-        >
-
-            <div className="modal-dialog modal-dialog-centered">
-
-                <div className="modal-content">
-
-                    <div className="modal-header">
-
-                        <h5 className="modal-title">
-
-                            {title}
-
-                        </h5>
-
+        <div className="ms-modal-overlay" onClick={onCancel}>
+            <div className="ms-modal" style={{ maxWidth: "420px" }} onClick={(e) => e.stopPropagation()}>
+                <div className="ms-modal-header">
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                        <div style={{
+                            width: 36, height: 36, borderRadius: "50%",
+                            background: "rgba(220,53,69,0.12)",
+                            display: "flex", alignItems: "center", justifyContent: "center",
+                            color: "#dc3545", fontSize: 16
+                        }}>
+                            <FaExclamationTriangle />
+                        </div>
+                        <span className="ms-modal-title">{title}</span>
                     </div>
-
-                    <div className="modal-body">
-
-                        <p>
-
-                            {message}
-
-                        </p>
-
-                    </div>
-
-                    <div className="modal-footer">
-
-                        <button
-                            className="btn btn-secondary"
-                            onClick={onCancel}
-                        >
-
-                            Cancel
-
-                        </button>
-
-                        <button
-                            className="btn btn-danger"
-                            onClick={onConfirm}
-                        >
-
-                            Delete
-
-                        </button>
-
-                    </div>
-
+                    <button className="ms-modal-close" onClick={onCancel}>
+                        <FaTimes />
+                    </button>
                 </div>
 
+                <div className="ms-modal-body">
+                    <p style={{ color: "var(--gray-600)", margin: 0 }}>{message}</p>
+                </div>
+
+                <div className="ms-modal-footer">
+                    <button className="ms-btn ms-btn-outline" onClick={onCancel}>
+                        Cancel
+                    </button>
+                    <button className={`ms-btn ms-btn-${confirmClass}`} onClick={onConfirm}>
+                        {confirmText}
+                    </button>
+                </div>
             </div>
-
         </div>
-
     );
-
 }
 
 export default ConfirmDialog;

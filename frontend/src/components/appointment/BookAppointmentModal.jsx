@@ -1,309 +1,132 @@
-import { useEffect, useState } from "react";
-
+import { useState, useEffect } from "react";
+import { toast } from "react-toastify";
+import { FaTimes } from "react-icons/fa";
+import { bookAppointment, updateAppointment } from "../../services/appointmentService";
 import { getDoctors } from "../../services/doctorService";
 import { getPatients } from "../../services/patientService";
-import {
-    bookAppointment,
-    updateAppointment
-} from "../../services/appointmentService";
-import { toast } from "react-toastify";
 
-function BookAppointmentModal({
-
-                                  appointmentData = null,
-                                  onClose,
-                                  onSuccess
-
-                              }) {
-
-    const [doctors, setDoctors] = useState([]);
+function BookAppointmentModal({ appointmentData, onClose, onSuccess }) {
+    const isEdit = !!appointmentData;
+    const [doctors, setDoctors]   = useState([]);
     const [patients, setPatients] = useState([]);
-
-    const [appointment, setAppointment] = useState(
-
-        appointmentData || {
-
-            doctorId: "",
-            patientId: "",
-            appointmentDate: "",
-            appointmentTime: "",
-            reason: ""
-
-        }
-
-    );
+    const [loading, setLoading]   = useState(false);
+    const [form, setForm] = useState({
+        patientId: "", doctorId: "",
+        appointmentDate: "", appointmentTime: "",
+        reason: ""
+    });
 
     useEffect(() => {
+        Promise.all([getDoctors(), getPatients()])
+            .then(([docs, pats]) => { setDoctors(docs); setPatients(pats); })
+            .catch(console.error);
 
-        loadDoctors();
+        if (appointmentData) {
+            setForm({
+                patientId: appointmentData.patientId || "",
+                doctorId: appointmentData.doctorId || "",
+                appointmentDate: appointmentData.appointmentDate || "",
+                appointmentTime: appointmentData.appointmentTime || "",
+                reason: appointmentData.reason || "",
+            });
+        }
+    }, [appointmentData]);
 
-        loadPatients();
-
-    }, []);
-
-    const loadDoctors = async () => {
-
-        const data = await getDoctors();
-
-        setDoctors(data);
-
-    };
-
-    const loadPatients = async () => {
-
-        const data = await getPatients();
-
-        setPatients(data);
-
-    };
-
-    const handleChange = (e) => {
-
-        const { name, value } = e.target;
-
-        setAppointment({
-
-            ...appointment,
-
-            [name]: value
-
-        });
-
-    };
+    const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
     const handleSubmit = async (e) => {
-
         e.preventDefault();
-
+        setLoading(true);
         try {
-
-            if (appointmentData) {
-
-                await updateAppointment(
-                    appointmentData.id,
-                    appointment
-                );
-
-                toast.success("Appointment Updated Successfully");
-
+            if (isEdit) {
+                await updateAppointment(appointmentData.id, form);
+                toast.success("Appointment updated!");
             } else {
-
-                await bookAppointment(
-                    appointment
-                );
-
-                toast.error("Appointment Booked Successfully");
-
+                await bookAppointment(form);
+                toast.success("Appointment booked successfully!");
             }
-
             onSuccess();
-
             onClose();
-
-        } catch (error) {
-
-            console.log(error);
-
-            toast.error("Operation Failed");
-
+        } catch (err) {
+            const msg = err.response?.data?.message || err.response?.data || "Operation failed.";
+            toast.error(typeof msg === "string" ? msg : "Operation failed.");
+        } finally {
+            setLoading(false);
         }
-
     };
 
     return (
-
-        <div className="modal d-block">
-
-            <div className="modal-dialog modal-lg">
-
-                <div className="modal-content">
-
-                    <div className="modal-header">
-
-                        <h4>
-
-                            {
-
-                                appointmentData
-
-                                    ? "Edit Appointment"
-
-                                    : "Book Appointment"
-
-                            }
-
-                        </h4>
-
-                        <button
-                            className="btn-close"
-                            onClick={onClose}
-                        ></button>
-
-                    </div>
-
-                    <form onSubmit={handleSubmit}>
-
-                        <div className="modal-body">
-
-                            <div className="row">
-
-                                <div className="col-md-6 mb-3">
-
-                                    <label>Patient</label>
-
-                                    <select
-                                        className="form-select"
-                                        name="patientId"
-                                        value={appointment.patientId}
-                                        onChange={handleChange}
-                                        required
-                                    >
-
-                                        <option value="">
-                                            Select Patient
-                                        </option>
-
-                                        {
-
-                                            patients.map(patient => (
-
-                                                <option
-                                                    key={patient.id}
-                                                    value={patient.id}
-                                                >
-                                                    {patient.patientName}
-                                                </option>
-
-                                            ))
-
-                                        }
-
-                                    </select>
-
-                                </div>
-
-                                <div className="col-md-6 mb-3">
-
-                                    <label>Doctor</label>
-
-                                    <select
-                                        className="form-select"
-                                        name="doctorId"
-                                        value={appointment.doctorId}
-                                        onChange={handleChange}
-                                        required
-                                    >
-
-                                        <option value="">
-                                            Select Doctor
-                                        </option>
-
-                                        {
-
-                                            doctors.map(doctor => (
-
-                                                <option
-                                                    key={doctor.id}
-                                                    value={doctor.id}
-                                                >
-                                                    {doctor.doctorName}
-                                                </option>
-
-                                            ))
-
-                                        }
-
-                                    </select>
-
-                                </div>
-
-                                <div className="col-md-6 mb-3">
-
-                                    <label>Appointment Date</label>
-
-                                    <input
-                                        type="date"
-                                        className="form-control"
-                                        name="appointmentDate"
-                                        value={appointment.appointmentDate}
-                                        onChange={handleChange}
-                                        required
-                                    />
-
-                                </div>
-
-                                <div className="col-md-6 mb-3">
-
-                                    <label>Appointment Time</label>
-
-                                    <input
-                                        type="time"
-                                        className="form-control"
-                                        name="appointmentTime"
-                                        value={appointment.appointmentTime}
-                                        onChange={handleChange}
-                                        required
-                                    />
-
-                                </div>
-
-                                <div className="col-md-12 mb-3">
-
-                                    <label>Reason</label>
-
-                                    <textarea
-                                        className="form-control"
-                                        rows="3"
-                                        name="reason"
-                                        value={appointment.reason}
-                                        onChange={handleChange}
-                                        required
-                                    ></textarea>
-
-                                </div>
-
-                            </div>
-
-                        </div>
-
-                        <div className="modal-footer">
-
-                            <button
-                                type="button"
-                                className="btn btn-secondary"
-                                onClick={onClose}
-                            >
-                                Cancel
-                            </button>
-
-                            <button
-                                type="submit"
-                                className="btn btn-primary"
-                            >
-                                {
-
-                                    appointmentData
-
-                                        ? "Update"
-
-                                        : "Book"
-
-                                }
-
-                            </button>
-
-                        </div>
-
-                    </form>
-
+        <div className="ms-modal-overlay" onClick={onClose}>
+            <div className="ms-modal" onClick={(e) => e.stopPropagation()}>
+                <div className="ms-modal-header">
+                    <span className="ms-modal-title">{isEdit ? "Edit Appointment" : "Book Appointment"}</span>
+                    <button className="ms-modal-close" onClick={onClose}><FaTimes /></button>
                 </div>
 
+                <div className="ms-modal-body">
+                    <form id="appt-form" onSubmit={handleSubmit}>
+                        <div className="row g-3">
+                            <div className="col-12">
+                                <div className="ms-form-group">
+                                    <label className="ms-form-label">Patient</label>
+                                    <select name="patientId" className="ms-form-control"
+                                        value={form.patientId} onChange={handleChange} required>
+                                        <option value="">-- Select Patient --</option>
+                                        {patients.map(p => (
+                                            <option key={p.id} value={p.id}>{p.patientName}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
+                            <div className="col-12">
+                                <div className="ms-form-group">
+                                    <label className="ms-form-label">Doctor</label>
+                                    <select name="doctorId" className="ms-form-control"
+                                        value={form.doctorId} onChange={handleChange} required>
+                                        <option value="">-- Select Doctor --</option>
+                                        {doctors.map(d => (
+                                            <option key={d.id} value={d.id}>
+                                                Dr. {d.doctorName} — {d.specialization}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
+                            <div className="col-6">
+                                <div className="ms-form-group">
+                                    <label className="ms-form-label">Date</label>
+                                    <input type="date" name="appointmentDate" className="ms-form-control"
+                                        value={form.appointmentDate} onChange={handleChange} required />
+                                </div>
+                            </div>
+                            <div className="col-6">
+                                <div className="ms-form-group">
+                                    <label className="ms-form-label">Time</label>
+                                    <input type="time" name="appointmentTime" className="ms-form-control"
+                                        value={form.appointmentTime} onChange={handleChange} required />
+                                </div>
+                            </div>
+                            <div className="col-12">
+                                <div className="ms-form-group">
+                                    <label className="ms-form-label">Reason</label>
+                                    <textarea name="reason" className="ms-form-control" rows={3}
+                                        value={form.reason} onChange={handleChange}
+                                        placeholder="Describe the reason..." style={{ resize: "none" }} />
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <div className="ms-modal-footer">
+                    <button className="ms-btn ms-btn-outline" onClick={onClose}>Cancel</button>
+                    <button className="ms-btn ms-btn-primary" form="appt-form" type="submit" disabled={loading}>
+                        {loading ? "Saving..." : (isEdit ? "Update" : "Book Appointment")}
+                    </button>
+                </div>
             </div>
-
         </div>
-
     );
-
 }
 
 export default BookAppointmentModal;

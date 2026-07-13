@@ -1,121 +1,104 @@
-import { NavLink } from "react-router-dom";
-
+import { NavLink, useNavigate } from "react-router-dom";
 import {
     FaTachometerAlt,
     FaUserMd,
     FaUsers,
     FaCalendarCheck,
-    FaSignOutAlt
+    FaSignOutAlt,
+    FaHospital,
+    FaUserShield
 } from "react-icons/fa";
+import useAuth from "../../hooks/useAuth";
 
-function Sidebar() {
+function AdminSidebar() {
+    const { logout, username } = useAuth();
+    const navigate = useNavigate();
+
+    const handleLogout = () => {
+        logout();
+        navigate("/login");
+    };
 
     return (
+        <div className="ms-sidebar">
+            {/* Brand */}
+            <div className="ms-sidebar-brand">
+                <div className="ms-sidebar-brand-logo">
+                    <div className="ms-sidebar-brand-icon">
+                        <FaHospital />
+                    </div>
+                    <div>
+                        <div className="ms-sidebar-brand-text">MediSphere</div>
+                        <div className="ms-sidebar-brand-subtitle">Admin Portal</div>
+                    </div>
+                </div>
+            </div>
 
-        <div
-            className="bg-dark text-white p-3 shadow"
-            style={{
-                width: "260px",
-                minHeight: "100vh"
-            }}
-        >
+            {/* Navigation */}
+            <ul className="ms-sidebar-nav">
+                <li className="ms-sidebar-section-label">Main Menu</li>
 
-            <h3 className="text-center mb-4">
-
-                🏥 MediSphere
-
-            </h3>
-
-            <ul className="nav flex-column">
-
-                <li className="nav-item mb-2">
-
-                    <NavLink
-                        to="/admin/dashboard"
-                        className="nav-link text-white"
-                    >
-
-                        <FaTachometerAlt className="me-2"/>
-
+                <li className="ms-sidebar-item">
+                    <NavLink to="/admin/dashboard" className={({ isActive }) =>
+                        `ms-sidebar-link ${isActive ? "active" : ""}`
+                    }>
+                        <FaTachometerAlt />
                         Dashboard
-
                     </NavLink>
-
                 </li>
 
-                <li className="nav-item mb-2">
-
-                    <NavLink
-                        to="/admin/doctors"
-                        className="nav-link text-white"
-                    >
-
-                        <FaUserMd className="me-2"/>
-
+                <li className="ms-sidebar-item">
+                    <NavLink to="/admin/doctors" className={({ isActive }) =>
+                        `ms-sidebar-link ${isActive ? "active" : ""}`
+                    }>
+                        <FaUserMd />
                         Doctors
-
                     </NavLink>
-
                 </li>
 
-                <li className="nav-item mb-2">
-
-                    <NavLink
-                        to="/admin/patients"
-                        className="nav-link text-white"
-                    >
-
-                        <FaUsers className="me-2"/>
-
+                <li className="ms-sidebar-item">
+                    <NavLink to="/admin/patients" className={({ isActive }) =>
+                        `ms-sidebar-link ${isActive ? "active" : ""}`
+                    }>
+                        <FaUsers />
                         Patients
-
                     </NavLink>
-
                 </li>
 
-                <li className="nav-item mb-2">
-
-                    <NavLink
-                        to="/admin/appointments"
-                        className="nav-link text-white"
-                    >
-
-                        <FaCalendarCheck className="me-2"/>
-
+                <li className="ms-sidebar-item">
+                    <NavLink to="/admin/appointments" className={({ isActive }) =>
+                        `ms-sidebar-link ${isActive ? "active" : ""}`
+                    }>
+                        <FaCalendarCheck />
                         Appointments
-
                     </NavLink>
-
                 </li>
 
-                <hr/>
+                <li className="ms-sidebar-section-label" style={{ marginTop: "8px" }}>Account</li>
 
-                <li className="nav-item">
-
-                    <NavLink
-                        to="/"
-                        className="nav-link text-danger"
-                        onClick={() => {
-
-                            localStorage.clear();
-
-                        }}
-                    >
-
-                        <FaSignOutAlt className="me-2"/>
-
-                        Logout
-
+                <li className="ms-sidebar-item">
+                    <NavLink to="/admin/profile" className={({ isActive }) =>
+                        `ms-sidebar-link ${isActive ? "active" : ""}`
+                    }>
+                        <FaUserShield />
+                        Profile
                     </NavLink>
-
                 </li>
-
             </ul>
 
+            {/* Logout */}
+            <div className="ms-sidebar-logout">
+                <button
+                    className="ms-sidebar-link w-100 border-0"
+                    style={{ background: "rgba(220,53,69,0.1)", color: "#ef4444", cursor: "pointer" }}
+                    onClick={handleLogout}
+                >
+                    <FaSignOutAlt />
+                    Logout
+                </button>
+            </div>
         </div>
-
     );
-
 }
 
-export default Sidebar;
+export default AdminSidebar;

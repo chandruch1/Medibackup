@@ -1,112 +1,61 @@
 import { useEffect, useState } from "react";
-
 import AdminLayout from "../../layouts/AdminLayout";
 import DashboardCard from "../../components/dashboard/DashboardCard";
-
+import { AppointmentDonutChart, StatsBarChart } from "../../components/dashboard/AppointmentChart";
+import Loader from "../../components/common/Loader";
 import { getDashboardData } from "../../services/dashboardService";
-import AppointmentChart from "../../components/dashboard/AppointmentChart";
+import { FaUserMd, FaUsers, FaCalendarCheck, FaHourglass, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
 
-function Dashboard() {
-
-    const [dashboard, setDashboard] = useState(null);
+function AdminDashboard() {
+    const [data, setData]       = useState(null);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-
-        loadDashboard();
-
+        getDashboardData()
+            .then(setData)
+            .catch(console.error)
+            .finally(() => setLoading(false));
     }, []);
 
-    const loadDashboard = async () => {
-
-        try {
-
-            const data = await getDashboardData();
-
-            setDashboard(data);
-
-        } catch (error) {
-
-            console.log(error);
-
-        }
-
-    };
-
-    if (!dashboard) {
-
-        return (
-
-            <AdminLayout>
-
-                <h4>Loading Dashboard...</h4>
-
-            </AdminLayout>
-
-        );
-
+    if (loading) {
+        return <AdminLayout title="Dashboard"><Loader text="Loading dashboard..." /></AdminLayout>;
     }
 
+    const d = data || {};
+
     return (
-
-        <AdminLayout>
-
-            <h2 className="mb-4">
-                Dashboard
-            </h2>
-
-            <div className="row">
-
-                <DashboardCard
-                    title="Doctors"
-                    value={dashboard.totalDoctors}
-                    icon="👨‍⚕️"
-                    color="#0d6efd"
-                />
-
-                <DashboardCard
-                    title="Patients"
-                    value={dashboard.totalPatients}
-                    icon="🧑"
-                    color="#20c997"
-                />
-
-                <DashboardCard
-                    title="Appointments"
-                    value={dashboard.totalAppointments}
-                    icon="📅"
-                    color="#fd7e14"
-                />
-
-                <DashboardCard
-                    title="Booked"
-                    value={dashboard.bookedAppointments}
-                    icon="🟦"
-                    color="#0d6efd"
-                />
-
-                <DashboardCard
-                    title="Completed"
-                    value={dashboard.completedAppointments}
-                    icon="✅"
-                    color="#198754"
-                />
-
-                <DashboardCard
-                    title="Cancelled"
-                    value={dashboard.cancelledAppointments}
-                    icon="❌"
-                    color="#dc3545"
-                />
-                <AppointmentChart
-                    dashboard={dashboard}
-                />
-
+        <AdminLayout title="Dashboard" subtitle="Welcome back! Here's what's happening today.">
+            {/* Stat Cards */}
+            <div className="row mb-2">
+                <DashboardCard title="Total Doctors"      value={d.totalDoctors}          icon={<FaUserMd />}         colorClass="blue" />
+                <DashboardCard title="Total Patients"     value={d.totalPatients}          icon={<FaUsers />}          colorClass="teal" />
+                <DashboardCard title="Total Appointments" value={d.totalAppointments}      icon={<FaCalendarCheck />}  colorClass="orange" />
+                <DashboardCard title="Booked"             value={d.bookedAppointments}     icon={<FaHourglass />}      colorClass="purple" />
+                <DashboardCard title="Completed"          value={d.completedAppointments}  icon={<FaCheckCircle />}    colorClass="green" />
+                <DashboardCard title="Cancelled"          value={d.cancelledAppointments}  icon={<FaTimesCircle />}    colorClass="red" />
             </div>
 
+            {/* Charts */}
+            <div className="row">
+                <div className="col-lg-5 mb-4">
+                    <AppointmentDonutChart
+                        d={[d.bookedAppointments, d.completedAppointments, d.cancelledAppointments]}
+                        labels={["Booked", "Completed", "Cancelled"]}
+                        colors={["#0d6efd", "#198754", "#dc3545"]}
+                        title="Appointment Overview"
+                    />
+                </div>
+                <div className="col-lg-7 mb-4">
+                    <StatsBarChart
+                        labels={["Doctors", "Patients", "Total Appointments", "Completed"]}
+                        values={[d.totalDoctors, d.totalPatients, d.totalAppointments, d.completedAppointments]}
+                        colors={["#0d6efd", "#20c997", "#fd7e14", "#198754"]}
+                        title="Overall Statistics"
+                    />
+                </div>
+            </div>
         </AdminLayout>
-
     );
-
 }
 
-export default Dashboard;
+export default AdminDashboard;

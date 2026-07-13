@@ -1,67 +1,15 @@
-function DashboardCard({
-
-                           title,
-                           value,
-                           icon,
-                           color
-
-                       }) {
-
+function DashboardCard({ title, value, icon, color, colorClass }) {
     return (
-
-        <div className="col-lg-4 col-md-6 mb-4">
-
-            <div
-                className="card shadow-sm border-0 h-100"
-                style={{
-                    borderLeft: `6px solid ${color}`,
-                    transition: "0.3s"
-                }}
-            >
-
-                <div className="card-body">
-
-                    <div className="d-flex justify-content-between align-items-center">
-
-                        <div>
-
-                            <h6 className="text-muted">
-
-                                {title}
-
-                            </h6>
-
-                            <h2
-                                className="fw-bold mt-2"
-                                style={{ color }}
-                            >
-
-                                {value}
-
-                            </h2>
-
-                        </div>
-
-                        <div
-                            style={{
-                                fontSize: "45px"
-                            }}
-                        >
-
-                            {icon}
-
-                        </div>
-
-                    </div>
-
+        <div className="col-xl-2 col-lg-3 col-md-4 col-sm-6 mb-4">
+            <div className={`ms-stat-card ${colorClass || "blue"}`}>
+                <div className={`ms-stat-icon ${colorClass || "blue"}`}>
+                    {icon}
                 </div>
-
+                <div className="ms-stat-value">{value ?? 0}</div>
+                <div className="ms-stat-label">{title}</div>
             </div>
-
         </div>
-
     );
-
 }
 
 export default DashboardCard;

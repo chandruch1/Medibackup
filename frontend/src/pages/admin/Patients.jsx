@@ -1,336 +1,158 @@
 import { useEffect, useState } from "react";
-
 import AdminLayout from "../../layouts/AdminLayout";
-
 import Loader from "../../components/common/Loader";
 import SearchBar from "../../components/common/SearchBar";
-
+import Pagination from "../../components/common/Pagination";
+import ConfirmDialog from "../../components/common/ConfirmDialog";
+import StatusBadge from "../../components/common/StatusBadge";
 import AddPatientModal from "../../components/patient/AddPatientModal";
 import { toast } from "react-toastify";
-import ConfirmDialog from "../../components/common/ConfirmDialog";
+import { FaPlus, FaUsers } from "react-icons/fa";
+import { getPatientsPage, searchPatientByName, deletePatient } from "../../services/patientService";
 
-import {
-    getPatientsPage,
-    searchPatientByName,
-    deletePatient
-} from "../../services/patientService";
-
-import Pagination from "../../components/common/Pagination";
+const BLOOD_COLORS = {
+    "A+": "#0d6efd", "A-": "#6f42c1", "B+": "#20c997", "B-": "#198754",
+    "AB+": "#fd7e14", "AB-": "#dc3545", "O+": "#0dcaf0", "O-": "#ffc107"
+};
 
 function Patients() {
-
-    const [patients, setPatients] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [search, setSearch] = useState("");
-
-    const [showModal, setShowModal] = useState(false);
-    const [selectedPatient, setSelectedPatient] = useState(null);
-
+    const [patients, setPatients]     = useState([]);
+    const [loading, setLoading]       = useState(true);
+    const [search, setSearch]         = useState("");
+    const [showModal, setShowModal]   = useState(false);
+    const [selected, setSelected]     = useState(null);
     const [currentPage, setCurrentPage] = useState(0);
-
     const [totalPages, setTotalPages] = useState(0);
-
     const [showConfirm, setShowConfirm] = useState(false);
+    const [toDelete, setToDelete]     = useState(null);
+    const PAGE_SIZE = 8;
 
-    const [patientToDelete, setPatientToDelete] = useState(null);
-
-    const pageSize = 5;
-
-    useEffect(() => {
-
-        loadPatients(currentPage);
-
-    }, [currentPage]);
+    useEffect(() => { loadPatients(currentPage); }, [currentPage]);
 
     const loadPatients = async (page) => {
-
         try {
-
             setLoading(true);
-
-            const data = await getPatientsPage(page, pageSize);
-
+            const data = await getPatientsPage(page, PAGE_SIZE);
             setPatients(data.content);
-
             setTotalPages(data.totalPages);
-
-        } catch (error) {
-
-            console.log(error);
-
-        } finally {
-
-            setLoading(false);
-
-        }
-
+        } catch (e) { console.error(e); }
+        finally { setLoading(false); }
     };
 
-    const handleSearch = async (value) => {
-
-        setSearch(value);
-
+    const handleSearch = async (val) => {
+        setSearch(val);
+        if (!val.trim()) { loadPatients(currentPage); return; }
         try {
-
-            if (value.trim() === "") {
-
-                loadPatients(currentPage);
-
-                return;
-
-            }
-
-            const data = await searchPatientByName(value);
-
+            const data = await searchPatientByName(val);
             setPatients(data);
-
-        } catch (error) {
-
-            console.log(error);
-
-        }
-
+        } catch (e) { console.error(e); }
     };
 
     const handleDelete = async () => {
-
         try {
-
-            await deletePatient(patientToDelete);
-
-            toast.success("Patient Deleted Successfully");
-
+            await deletePatient(toDelete);
+            toast.success("Patient deleted successfully!");
             loadPatients(currentPage);
-
-        } catch (error) {
-
-            console.log(error);
-
-            toast.error("Delete Failed");
-
-        } finally {
-
-            setShowConfirm(false);
-
-            setPatientToDelete(null);
-
-        }
-
+        } catch { toast.error("Delete failed."); }
+        finally { setShowConfirm(false); setToDelete(null); }
     };
-    if (loading) {
-
-        return (
-
-            <AdminLayout>
-
-                <Loader />
-
-            </AdminLayout>
-
-        );
-
-    }
 
     return (
+        <AdminLayout title="Patients" subtitle="Manage all registered patients">
 
-        <AdminLayout>
-
-            <div className="d-flex justify-content-between align-items-center mb-4">
-
-                <h2>Patients</h2>
-
-                <button
-                    className="btn btn-primary"
-                    onClick={() => {
-
-                        setSelectedPatient(null);
-
-                        setShowModal(true);
-
-                    }}
-                >
-                    Add Patient
+            {/* Toolbar */}
+            <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+                <SearchBar value={search} onChange={handleSearch} placeholder="Search by name..." />
+                <button className="ms-btn ms-btn-primary ms-btn-sm" onClick={() => { setSelected(null); setShowModal(true); }}>
+                    <FaPlus /> Add Patient
                 </button>
-
             </div>
 
-            <div className="mb-4">
-
-                <SearchBar
-                    value={search}
-                    onChange={handleSearch}
-                    placeholder="Search Patient..."
-                />
-
-            </div>
-
-            <table className="table table-hover table-bordered">
-
-                <thead className="table-dark">
-
-                <tr>
-
-                    <th>Name</th>
-                    <th>Age</th>
-                    <th>Gender</th>
-                    <th>Phone</th>
-                    <th>Blood Group</th>
-                    <th>Disease</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-
-                </tr>
-
-                </thead>
-
-                <tbody>
-
-                {
-
-                    patients.length > 0 ? (
-
-                        patients.map((patient) => (
-
-                            <tr key={patient.id}>
-
-                                <td>{patient.patientName}</td>
-
-                                <td>{patient.age}</td>
-
-                                <td>{patient.gender}</td>
-
-                                <td>{patient.phone}</td>
-
-                                <td>{patient.bloodGroup}</td>
-
-                                <td>{patient.disease}</td>
-
-                                <td>
-
-                                        <span
-                                            className={
-                                                patient.status
-                                                    ? "badge bg-success"
-                                                    : "badge bg-danger"
-                                            }
-                                        >
-                                            {
-                                                patient.status
-                                                    ? "Active"
-                                                    : "Inactive"
-                                            }
-                                        </span>
-
-                                </td>
-
-                                <td>
-
-                                    <button
-                                        className="btn btn-warning btn-sm me-2"
-                                        onClick={() => {
-
-                                            setSelectedPatient(patient);
-
-                                            setShowModal(true);
-
-                                        }}
-                                    >
-                                        Edit
-                                    </button>
-
-                                    <button
-                                        className="btn btn-danger btn-sm"
-                                        onClick={() => {
-
-                                            setPatientToDelete(patient.id);
-
-                                            setShowConfirm(true);
-
-                                        }}
-                                    >
-                                        Delete
-                                    </button>
-
-                                </td>
-
+            {/* Table */}
+            {loading ? <Loader /> : (
+                <div className="ms-table-card">
+                    <table className="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Patient</th>
+                                <th>Age / Gender</th>
+                                <th>Phone</th>
+                                <th>Blood Group</th>
+                                <th>Disease</th>
+                                <th>Status</th>
+                                <th>Actions</th>
                             </tr>
+                        </thead>
+                        <tbody>
+                            {patients.length === 0 ? (
+                                <tr><td colSpan={8} className="text-center py-5" style={{ color: "var(--gray-400)" }}>
+                                    <FaUsers style={{ fontSize: 36, display: "block", margin: "0 auto 8px" }} />
+                                    No patients found
+                                </td></tr>
+                            ) : patients.map((p, i) => (
+                                <tr key={p.id}>
+                                    <td style={{ color: "var(--gray-400)", fontSize: 12 }}>{currentPage * PAGE_SIZE + i + 1}</td>
+                                    <td>
+                                        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                                            <div style={{
+                                                width: 36, height: 36, borderRadius: "50%",
+                                                background: "linear-gradient(135deg, #6f42c1, #20c997)",
+                                                display: "flex", alignItems: "center", justifyContent: "center",
+                                                color: "#fff", fontWeight: 700, fontSize: 13, flexShrink: 0
+                                            }}>
+                                                {p.patientName?.[0] || "P"}
+                                            </div>
+                                            <div>
+                                                <div style={{ fontWeight: 600, fontSize: 14 }}>{p.patientName}</div>
+                                                <div style={{ fontSize: 12, color: "var(--gray-500)" }}>{p.email}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>{p.age} yrs / {p.gender}</td>
+                                    <td>{p.phone}</td>
+                                    <td>
+                                        <span style={{
+                                            display: "inline-block", padding: "2px 10px", borderRadius: 20,
+                                            background: (BLOOD_COLORS[p.bloodGroup] || "#6c757d") + "18",
+                                            color: BLOOD_COLORS[p.bloodGroup] || "#6c757d",
+                                            fontSize: 12, fontWeight: 700
+                                        }}>
+                                            {p.bloodGroup}
+                                        </span>
+                                    </td>
+                                    <td style={{ fontSize: 13 }}>{p.disease || "—"}</td>
+                                    <td><StatusBadge status={p.status ? "active" : "inactive"} /></td>
+                                    <td>
+                                        <button className="ms-btn ms-btn-warning ms-btn-sm me-1"
+                                            onClick={() => { setSelected(p); setShowModal(true); }}>Edit</button>
+                                        <button className="ms-btn ms-btn-danger ms-btn-sm"
+                                            onClick={() => { setToDelete(p.id); setShowConfirm(true); }}>Delete</button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            )}
 
-                        ))
+            <Pagination currentPage={currentPage} totalPages={totalPages}
+                onPrevious={() => setCurrentPage(p => p - 1)}
+                onNext={() => setCurrentPage(p => p + 1)} />
 
-                    ) : (
-
-                        <tr>
-
-                            <td colSpan="8" className="text-center">
-
-                                No Patients Found
-
-                            </td>
-
-                        </tr>
-
-                    )
-
-                }
-
-                </tbody>
-
-            </table>
-
-            <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                onPrevious={() => setCurrentPage(currentPage - 1)}
-                onNext={() => setCurrentPage(currentPage + 1)}
-            />
-
-            <ConfirmDialog
-
-                show={showConfirm}
-
-                title="Delete Patient"
-
+            <ConfirmDialog show={showConfirm} title="Delete Patient"
                 message="Are you sure you want to delete this patient?"
+                onConfirm={handleDelete} onCancel={() => { setShowConfirm(false); setToDelete(null); }} />
 
-                onConfirm={handleDelete}
-
-                onCancel={() => {
-
-                    setShowConfirm(false);
-
-                    setPatientToDelete(null);
-
-                }}
-
-            />
-            {
-
-                showModal && (
-
-                    <AddPatientModal
-
-                        patientData={selectedPatient}
-
-                        onClose={() => {
-
-                            setShowModal(false);
-
-                            setSelectedPatient(null);
-
-                        }}
-
-                        onSuccess={() => loadPatients(currentPage)}
-
-                    />
-
-                )
-
-            }
-
+            {showModal && (
+                <AddPatientModal
+                    patientData={selected}
+                    onClose={() => { setShowModal(false); setSelected(null); }}
+                    onSuccess={() => loadPatients(currentPage)}
+                />
+            )}
         </AdminLayout>
-
     );
-
 }
 
 export default Patients;
