@@ -16,7 +16,7 @@ public class Prescription {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "appointment_id", nullable = false, unique = true)
     private Appointment appointment;
 
@@ -28,7 +28,8 @@ public class Prescription {
 
     @Column(nullable = false)
     private String duration;
-
-    @Column(length = 1000)
+   @Column(length = 1000)
     private String notes;
+
+
 }

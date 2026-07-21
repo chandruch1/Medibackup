@@ -9,6 +9,7 @@ import com.medisphere.exception.ResourceNotFoundException;
 import com.medisphere.repository.AppointmentRepository;
 import com.medisphere.repository.DoctorRepository;
 import com.medisphere.repository.PatientRepository;
+import com.medisphere.repository.PrescriptionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Page;
@@ -33,6 +34,7 @@ public class AppointmentService {
     private final AppointmentRepository appointmentRepository;
     private final DoctorRepository doctorRepository;
     private final PatientRepository patientRepository;
+    private final PrescriptionRepository prescriptionRepository;
     private final MailService mailService;
 
     // Book Appointment
@@ -113,6 +115,9 @@ public class AppointmentService {
         Appointment appointment = appointmentRepository.findById(id)
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Appointment not found"));
+
+        prescriptionRepository.findByAppointment_Id(id)
+                .ifPresent(prescriptionRepository::delete);
 
         appointmentRepository.delete(appointment);
     }
